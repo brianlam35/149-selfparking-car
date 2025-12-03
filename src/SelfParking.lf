@@ -1,0 +1,214 @@
+target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    single-threaded: true
+  }
+  #include <math.h>
+  import Display from "lib/Display.lf"
+  import Motors from "lib/Motors.lf"
+  import GyroAngle from "lib/IMU.lf"
+  import Accelerometer from "lib/IMU.lf"
+  import AngleToDistance from "lib/AngleToDistance.lf"
+  import Bump from "lib/Bump.lf"
+  import Line from "lib/Line.lf"
+  import Tilt from "lib/Tilt.lf"
+
+
+  # ----------------------------------------------------------------------------------------------------
+
+reactor ParkingRobot {
+    # ------------------------ DECLARE VARIABLES -------------------------------------------------------
+    input trigger: bool
+    input calibrate: bool
+    input target_spot_in: int
+    input exit_request: bool
+
+    m = new Motors();
+    line = new Line();
+    disp = new Display();
+
+    trigger -> line.trigger; # for detecting lines
+    calibrate -> line.calibrate; #for detecting lines
+
+    state target_spot: int = -1; # initialized to nothing
+
+    timer tick(0, 50 ms); #POTENTIAL SYNTAX ERROR -- Timer to keep checking for Target_spot signal
+
+    // ---------------- VARIABLES FOR NAVIGATE TO PARKED SPOT ------------------
+    state counter: int = -1; // Keeps track of parking spot you just passed/saw -- first intersection is not a parking spot
+    state lost_center_count: int = 0; // counts ticks without seeing center line
+    
+    //Debouncing
+    state left_db: int = 0;
+    state right_db: int = 0;
+    state left_prev: bool = false;
+    state right_prev: bool = false;
+
+    //Base speed
+    state base_speed: float = 0.15;
+    
+    //Remember where we parked
+    state parked_spot: int = 0;
+
+    //black line threshold
+    state line_threshold: int = 10; //change to black_line
+
+
+    # --------------------------------------------------------------------------------------------------
+    # -------------------------- MODES -----------------------------------------------------------------
+    reaction(startup) -> disp.line0, disp.line1 {=
+        lf_set(disp.line0, "Entering Parking Lot");
+        lf_set(disp.line0, "WAITING FOR OPEN SPOT");
+    =}
+
+     # -----------------------------STATE 0 : WAIT FOR OPEN SPOT--------------------------------------------------
+     # WAIT FOR TARGET
+     # - Initial Mode
+     # - Robot sits still and keeps motors off
+     # - Every 50 ms, refresh the display
+     # - When valid target_spot_in (1..9) --> store it in target_spot --> jump to appropriate state
+    initial mode WAIT_FOR_TARGET { #MAKE SURE WHEEL SPEED IS 0
+        reaction(tick) -> m.left_power, m.right_power, disp.line0, disp.line1 {=
+            lf_set(m.left_power, 0.0f);
+            lf_set(m.right_power, 0.0f);
+
+            if (self->target_spot < 0) { 
+                lf_set(disp.line0, "WAITING FOR OPEN SPOT");
+            } else {
+                static char buf[17];
+                snprintf(buf, 17, "Target:%d", self->target_spot);
+                lf_set(disp.line0, "TARGET SET");
+                lf_set(disp.line1, buf);
+            }
+        =}
+
+        # given SIGNAL --> go to STATE 1, STATE 2, or STATE 3
+        reaction(target_spot_in) -> disp.line0, disp.line1, reset(PARK_SPOT_1), reset(PARK_SPOT_2_5), reset(PARK_SPOT_6_9) {=
+            int t = target_spot_in->value; // POTENTIAL SYNTAX ERROR
+
+            // NOT VALID PARKING SPOTS
+            if (t < 1 || t > 9) {
+                lf_set(disp.line0, "TARGET OF BOUNDS");
+                lf_set(disp.line1, "USE 1..9");
+                return;
+            }
+
+            // VALID INPUTS
+            self->target_spot = t;
+
+            if (t == 1) {
+                lf_set(disp.line0, "GO TO SPOT 1");
+                lf_set_mode(PARK_SPOT_1);
+            } else if (t >= 2 && t <= 5) {
+                static char buf[32];
+                snprintf(buf, 32, "GO TO SPOT %d", self->target_spot);
+                lf_set(disp.line0, buf);
+                lf_set_mode(PARK_SPOT_2_5);
+            } else { // 6 - 9
+                static char buf[32];
+                snprintf(buf, 32, "GO TO SPOT %d", self->target_spot);
+                lf_set(disp.line0, buf);
+                lf_set_mode(PARK_SPOT_6_9);
+            }
+        =}
+
+    }
+
+
+    # -----------------------------STATE 1 : GO TO PARKING SPOT 1 --------------------------------------------------
+
+    mode PARK_SPOT_1 {
+        reaction(line.reflect) -> m.left_power, m.right_power. disp.line0, disp.line1, reset(PARKED_IDLE) {=
+        
+            // Read values of line sensors
+            int v_left = line.reflect->value[0]; //left sensor
+            int v_center = line.reflect->value[2]; //center sensor
+            int v_right = line.reflect->value[4];
+
+            // detect intersection YES or NO
+            bool left_raw = (v_left < self->line_threshold);
+            bool center_raw = (v_center < self->line_threshold);
+            bool right_raw = (v_right < self->line_threshold);
+
+            // debounce left sensor
+            if (left_raw) {
+                if (self->left_db < 3) self->left_db++;
+            } else {
+                if (self->left_db > 0) self->left_db--;
+            }
+            bool left_stable = (self->left_db >= 2);
+
+
+            // debounce right sensor
+            if (right_raw) {
+                if (self->right_db < 3) self->right_db++;
+            } else {
+                if (self->right_db > 0) self->right_db--;
+            }
+            bool right_stable = (self->right_db >= 2);
+
+
+            bool left_rising = left_stable && !self->left_prev;
+            bool right_rising = right_stable && !self->right_prev;
+
+            self->left_prev = left_stable;
+            self->right_prev = right_stable;
+
+            // UPDATE INTERSECTION COUNTER
+            if (left_rising || right_rising) {
+                self->counter++;
+            }
+
+            // TRACK LOSS OF CENTER LINE
+            if (center_raw) {
+                self->lost_center_count = 0;
+            } else {
+                self->lost_center_count++;
+            }
+
+            // LINE FOLLOWING
+            float base = self->base_speed;
+            float l = base;
+            float r = base;
+
+            if (center_raw && !left_raw && !right_raw) {
+                l = base;
+                r = base;
+            } else if (left_raw && !right_raw) {
+                l = 0.05f;
+                r = 0.20f;
+            } else if (right_raw && !left_raw) {
+                l = 0.20f;
+                r = 0.05f;
+            } else {
+                l = base;
+                r = base;
+            }
+
+            lf_set(m.left_power, l);
+            lf_set(m.right_power, r);
+
+
+            // STOP WHEN DRIVEN INTO SPOT (CENTER LINE LOST)
+            if (self->lost_center_count > 8) { // TUNE 8 IDK WHAT IT MEANS
+                lf_set(m.left_power, 0.0f);
+                lf_set(m.right_power, 0.0f);
+
+                self->parked_spot = 1;
+
+                static char buf[17];
+                snprintf(buf, 17, "PARKED %d", self->parked_spot);
+                lf_set(disp.line0, buf);
+
+                lf_set_mode(PARKED_IDLE);
+            }
+        =}
+    }
+
+
+
+
+
+}
