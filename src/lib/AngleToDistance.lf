@@ -1,0 +1,33 @@
+target C {
+  platform: {
+    name: "rp2040",
+    board: "pololu_3pi_2040_robot"
+  },
+  single-threaded: true
+}
+
+import Encoders from "Encoders.lf"
+
+reactor AngleToDistance {
+  input trigger: bool;
+
+  output out_left: float;
+  output out_right: float;
+
+  encoder = new Encoders();
+
+  reaction(trigger) -> encoder.trigger {=
+    lf_set(encoder.trigger, true);
+  =}
+
+  reaction(encoder.left) -> out_left {=
+    float distance_left_cm = ((float)encoder.left->value / 360.0) * 2 * 3.14159 * 1.5875;
+    lf_set(out_left, distance_left_cm);
+  =}
+
+  reaction(encoder.right) -> out_right {=
+    float distance_right_cm = ((float)encoder.right->value / 360.0) * 2 * 3.14159 * 1.5875;
+    lf_set(out_right, distance_right_cm);
+  =}
+
+}

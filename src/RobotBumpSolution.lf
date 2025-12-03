@@ -1,0 +1,138 @@
+target C {
+  platform: {
+    name: "rp2040",
+    board: "pololu_3pi_2040_robot"
+  },
+  single-threaded: true
+}
+#include <math.h>
+import Display from "lib/Display.lf"
+import Motors from "lib/Motors.lf"
+import GyroAngle from "lib/IMU.lf"
+import AngleToDistance from "lib/AngleToDistance.lf"
+import Bump from "lib/Bump.lf"
+reactor Robot {
+  input trigger: bool
+  input calibrate: bool
+  output notify: string  // Notify of mode change.
+  m = new Motors()
+  gyro = new GyroAngle()
+  a2d = new AngleToDistance()
+  bump = new Bump()
+  trigger -> gyro.trigger 
+  trigger -> a2d.trigger
+  calibrate -> bump.calibrate
+  state curr_angle: float
+  state curr_dist: float
+  
+  reaction(startup) -> notify {=
+    lf_set(notify, "INIT");
+    self->curr_angle = 90;
+    self->curr_dist = 0;
+  =}
+  initial mode TURNING {
+    reaction(gyro.z, a2d.out_left, a2d.out_right)
+      -> m.left_power, m.right_power, reset(DRIVING), notify {=
+      float dist = (a2d.out_left->value + a2d.out_right->value) / 2.0f;
+      lf_set(m.left_power, 0.0995f);
+      lf_set(m.right_power, 0.0f);
+      lf_set(notify, "TURNING");
+      
+      float turn_angle;// 180 turn after bump, else 90
+      if (self->curr_dist < 0.0f) {
+        turn_angle = 180.0f;
+      } else {
+        turn_angle = 90.0f;
+      }
+      
+      if (fabsf(gyro.z->value - self->curr_angle) >= turn_angle) {
+        lf_set_mode(DRIVING);
+        lf_set(notify, "DRIVING");
+        lf_set(m.left_power, 0.1f);
+        lf_set(m.right_power, 0.1f);
+        // clear 180 flag by making curr_dist positive again
+        
+        if (dist >= 0.0f) {
+          self->curr_dist = dist;
+        } else {
+          self->curr_dist = fabsf(dist);
+        }
+      }
+    =}
+    // SWITCH TO BUMP DURING TURNING
+    reaction(a2d.out_left, a2d.out_right, gyro.z, bump.left, bump.right)
+      -> m.left_power, m.right_power, reset(BUMP_RESOLVE), notify {=
+      // IMPORTANT: check event presence, not pointer non-null
+      if (self->curr_dist >= 0.0f &&
+          ( (bump.left->is_present) || (bump.right->is_present) )) {
+        float dist = (a2d.out_left->value + a2d.out_right->value) / 2.0f;
+        lf_set_mode(BUMP_RESOLVE);
+        lf_set(notify, "AVOIDING");
+        lf_set(m.left_power, -0.1f); // MOVE BACKWARDS
+        lf_set(m.right_power, -0.1f);
+        self->curr_angle = gyro.z->value;
+        self->curr_dist = -dist; // NEXT TURNING SHOULD BE 180 DEGREES
+      }
+    =}
+  }
+  mode DRIVING {
+    reaction(gyro.z, a2d.out_left, a2d.out_right)
+      -> m.left_power, m.right_power, reset(TURNING), notify {=
+      float dist = (a2d.out_left->value + a2d.out_right->value) / 2.0f;
+      lf_set(m.left_power, 0.1f); // MOVE FORWARD
+      lf_set(m.right_power, 0.1f);
+      lf_set(notify, "DRIVING");
+      // AFTER 50 cm, DO 90 DEGREE TURN
+      if (fabsf(dist - self->curr_dist) >= 50.0f) {
+        lf_set_mode(TURNING);
+        lf_set(notify, "TURNING");
+        lf_set(m.left_power, 0.0995f);
+        lf_set(m.right_power, 0.0f);
+        self->curr_angle = gyro.z->value;
+      }
+    =}
+    reaction(a2d.out_left, a2d.out_right, gyro.z, bump.left, bump.right)
+      -> m.left_power, m.right_power, reset(BUMP_RESOLVE), notify {=
+      // IMPORTANT: check event presence, not pointer non-null
+      if (self->curr_dist >= 0.0f &&
+          ( (bump.left->is_present) || (bump.right->is_present) )) {
+        float dist = (a2d.out_left->value + a2d.out_right->value) / 2.0f;
+        lf_set_mode(BUMP_RESOLVE);
+        lf_set(notify, "AVOIDING");
+        lf_set(m.left_power, -0.1f); // MOVE BACKWARDS
+        lf_set(m.right_power, -0.1f);
+        self->curr_angle = gyro.z->value;
+        self->curr_dist = -dist; // NEXT TURNING SHOULD BE 180 DEGREES
+      }
+    =}
+  }
+  mode BUMP_RESOLVE {
+    reaction(a2d.out_left, a2d.out_right, gyro.z, bump.left, bump.right)
+      -> m.left_power, m.right_power, reset(TURNING), notify {=
+      float dist = (a2d.out_left->value + a2d.out_right->value) / 2.0f;
+      lf_set(m.left_power, -0.1f); // MOVE BACKWARDS
+      lf_set(m.right_power, -0.1f);
+      lf_set(notify, "BACKING");
+      if (fabsf(fabsf(dist) - fabsf(self->curr_dist)) >= 10.0f) {
+        lf_set_mode(TURNING);
+        lf_set(notify, "TURNING");
+        lf_set(m.left_power, 0.0995f);
+        lf_set(m.right_power, 0.0f);
+        self->curr_angle = gyro.z->value;
+        // keep curr_dist negative; TURNING will do 180° and then make it positive
+      }
+    =}
+  }
+}
+main reactor {
+  timer t(0, 10 ms)
+  robot = new Robot()
+  display = new Display()
+  robot.notify -> display.line0
+  reaction(startup) -> robot.calibrate {=
+    lf_set(robot.calibrate, true);
+  =}
+  reaction(t) -> robot.trigger {=
+    lf_set(robot.trigger, true);
+  =}
+}

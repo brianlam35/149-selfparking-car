@@ -1,0 +1,70 @@
+target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    single-threaded: true
+  }
+
+  #include <math.h>
+  
+  import Display from "lib/Display.lf"
+  import Motors from "lib/Motors.lf"
+  import GyroAngle from "lib/IMU.lf"
+  import AngleToDistance from "lib/AngleToDistance.lf"
+
+  reactor Robot {
+    input trigger: bool
+    output notify: string  // Notify of mode change.
+    m = new Motors()
+    gyro = new GyroAngle()
+    a2d = new AngleToDistance()
+    trigger -> gyro.trigger 
+    trigger -> a2d.trigger
+
+    state curr_angle: float
+    state curr_dist: float
+  
+    reaction(startup) -> notify {=
+      lf_set(notify, "INIT");
+      self->curr_angle = 90;
+    =}
+  
+    initial mode TURNING {
+      reaction(gyro.z, a2d.out_left, a2d.out_right) -> m.left_power, m.right_power, reset(DRIVING), notify {=
+        instant_t dist = (a2d.out_left->value + a2d.out_right->value) / 2;
+        if (abs(gyro.z->value - self->curr_angle) >= 90) {
+          lf_set_mode(DRIVING);
+          lf_set(notify, "DRIVING");
+          lf_set(m.left_power, 0.1f);
+          lf_set(m.right_power, 0.107f);
+          self->curr_dist = dist;
+        }
+      =}
+    }
+
+    mode DRIVING {
+      reaction(gyro.z, a2d.out_left, a2d.out_right) -> m.left_power, m.right_power, reset(TURNING), notify {=
+        instant_t dist = (a2d.out_left->value + a2d.out_right->value) / 2;
+        if (abs(dist - self->curr_dist) >= 50) {
+          lf_set_mode(TURNING);
+          lf_set(notify, "TURNING");
+          lf_set(m.left_power, 0.0995f);
+          lf_set(m.right_power, 0.0f);
+          self->curr_angle = gyro.z->value;
+          
+        }
+      =}
+    }
+  }
+  
+  main reactor {
+    timer t(0, 10 ms)
+    robot = new Robot()
+    display = new Display()
+    robot.notify -> display.line0
+  
+    reaction(t) -> robot.trigger {=
+      lf_set(robot.trigger, true);
+    =}
+  }

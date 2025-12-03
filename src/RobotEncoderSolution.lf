@@ -1,0 +1,44 @@
+/**
+ * Display encoder measurements from the wheels of the
+ * <a href="https://www.pololu.com/docs/0J86">Pololu 3pi+ 2040 robot</a>.
+ * @author Abhi Gundrala
+ * @author Edward A. Lee
+ */
+ target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    single-threaded: true
+  }
+  
+  import AngleToDistance from "lib/AngleToDistance.lf" 
+  import Display from "lib/Display.lf"
+
+  main reactor {
+    a2d = new AngleToDistance()
+    display = new Display()
+    
+    timer t(0, 1 s)
+  
+    reaction(t) -> a2d.trigger {=
+      lf_set(a2d.trigger, true);
+    =}
+  
+    reaction(startup) -> display.line0 {=
+      lf_set(display.line0, "ENCODERS:");
+    =}
+  
+    reaction(a2d.out_left) -> display.line1 {=
+      static char buf[17];
+      snprintf(buf, 17, "L: %.3f cm", a2d.out_left->value);
+      lf_set(display.line1, buf);
+    =}
+  
+    reaction(a2d.out_right) -> display.line2 {=
+      static char buf[17];
+      snprintf(buf, 17, "R: %.3f cm", a2d.out_right->value);
+      lf_set(display.line2, buf);
+    =}
+  }
+  
