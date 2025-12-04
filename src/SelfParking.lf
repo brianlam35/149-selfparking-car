@@ -208,6 +208,12 @@ reactor ParkingRobot {
     }
 
 
+    # -----------------------------STATE 2 : GO TO PARKING SPOT 2-5 --------------------------------------------------
+    mode PARK_SPOT_2_5 {
+        
+    }
+
+
 
 
 
