@@ -1,0 +1,422 @@
+target C {
+  platform: {
+    name: "rp2040",
+    board: "pololu_3pi_2040_robot"
+  },
+  single-threaded: true
+}
+
+#include <math.h>
+#include <stdio.h>
+
+import Display from "lib/Display.lf"
+import Motors from "lib/Motors.lf"
+import Line from "lib/Line.lf"
+
+// Common phases for exit behavior.
+#define EXIT_PHASE_BACKING   0   // backing out of the spot
+#define EXIT_PHASE_TURNING   1   // turning into the lane
+#define EXIT_PHASE_FOLLOW    2   // following line to exit
+#define EXIT_PHASE_EXTRA     3   // extra straight motion after line disappears
+
+reactor ExitRobot {
+  //------------------- Inputs / Subreactors -------------------
+  input trigger: bool          // periodic sensor trigger (50 ms)
+  input calibrate: bool        // passed to line calibrate (if used)
+  input exit_request: bool     // pulse to begin exiting
+  input parked_spot_in: int    // which spot the robot is parked in (1..9)
+
+  m    = new Motors()
+  line = new Line()
+  disp = new Display()
+
+  trigger   -> line.trigger
+  calibrate -> line.calibrate
+
+  //------------------- State variables ------------------------
+  // Current parked spot (latched from parked_spot_in on first value).
+  state parked_spot: int = 1
+
+  // Exit phase 0..3
+  state exit_phase: int = EXIT_PHASE_BACKING
+
+  // How many samples (~50 ms each) to drive straight after losing the line.
+  state exit_extra_ticks: int = 40       // ≈ 2 seconds at 50 ms
+  state exit_extra_counter: int = 0
+
+  // Debounce & line tracking
+  state left_db: int = 0
+  state right_db: int = 0
+  state left_prev: bool = false
+  state right_prev: bool = false
+  state lost_center_count: int = 0
+
+  // Line threshold (tune to your calibration)
+  state line_threshold: int = 10
+
+  // Base speed
+  state base_speed: float = 0.15
+
+  // Turning: -1 = left, +1 = right, 0 = none.
+  state turning_dir: int = 0
+  state turning_ticks: int = 0
+  state turn_ticks_90: int = 45   // tune for ≈90° turn at your speed
+
+  // Periodic tick to keep us alive even without new inputs.
+  timer tick(0, 50 ms)
+
+  //------------------- Startup -------------------------------
+  reaction(startup) -> disp.line0, disp.line1 {=
+    lf_set(disp.line0, "PARKED (EXIT)");
+    lf_set(disp.line1, "Waiting signal");
+  =}
+
+  // Latch the parked spot (we just remember the last value seen).
+  reaction(parked_spot_in) {=
+    int p = parked_spot_in->value;
+    if (p >= 1 && p <= 9) {
+      self->parked_spot = p;
+    }
+  =}
+
+  // Keep triggering the Line reactor.
+  reaction(tick) -> line.trigger {=
+    lf_set(line.trigger, true);
+  =}
+
+  /////////////////////////////////////////////////////////////////////////////
+  // MODE: PARKED_IDLE (same idea as in Parking file)
+  //  - Motors off.
+  //  - Wait for exit_request.
+  /////////////////////////////////////////////////////////////////////////////
+  initial mode PARKED_IDLE {
+    reaction(line.reflect) -> m.left_power, m.right_power {=
+      lf_set(m.left_power, 0.0f);
+      lf_set(m.right_power, 0.0f);
+    =}
+
+    reaction(exit_request)
+      -> disp.line0, disp.line1,
+         reset(EXIT_1_5), reset(EXIT_6_9) {=
+
+      if (!exit_request->value) return;
+
+      // Reset exit state.
+      self->exit_phase = EXIT_PHASE_BACKING;
+      self->exit_extra_counter = 0;
+      self->lost_center_count = 0;
+      self->turning_ticks = 0;
+      self->turning_dir = 0;
+
+      int p = self->parked_spot;
+
+      if (p >= 1 && p <= 5) {
+        lf_set(disp.line0, "EXIT FROM 1-5");
+        lf_set(disp.line1, "");
+        lf_set_mode(EXIT_1_5);
+      } else if (p >= 6 && p <= 9) {
+        lf_set(disp.line0, "EXIT FROM 6-9");
+        lf_set(disp.line1, "");
+        lf_set_mode(EXIT_6_9);
+      } else {
+        lf_set(disp.line0, "EXIT: BAD SPOT");
+        lf_set(disp.line1, "");
+      }
+    =}
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // MODE: EXIT_1_5
+  //  - Spots 1..5:
+  //    Phase BACKING: back up until main path detected:
+  //       odd spots (1,3,5)  -> first LEFT rising
+  //       even spots (2,4)   -> first RIGHT rising
+  //    Phase TURNING: 90° turn UP into lane.
+  //    Phase FOLLOW: line-follow up to exit.
+  //    Phase EXTRA: after line gone, 2 more seconds forward.
+  /////////////////////////////////////////////////////////////////////////////
+  mode EXIT_1_5 {
+    reaction(line.reflect)
+      -> m.left_power, m.right_power, disp.line0, disp.line1,
+         reset(EXIT_DONE) {=
+
+      // --- Read sensors ---
+      int v_left   = line.reflect->value[0];
+      int v_center = line.reflect->value[2];
+      int v_right  = line.reflect->value[4];
+
+      bool left_raw   = (v_left   < self->line_threshold);
+      bool center_raw = (v_center < self->line_threshold);
+      bool right_raw  = (v_right  < self->line_threshold);
+
+      // Debounce left
+      if (left_raw) {
+        if (self->left_db < 3) self->left_db++;
+      } else {
+        if (self->left_db > 0) self->left_db--;
+      }
+      bool left_stable = (self->left_db >= 2);
+
+      // Debounce right
+      if (right_raw) {
+        if (self->right_db < 3) self->right_db++;
+      } else {
+        if (self->right_db > 0) self->right_db--;
+      }
+      bool right_stable = (self->right_db >= 2);
+
+      bool left_rising  = left_stable  && !self->left_prev;
+      bool right_rising = right_stable && !self->right_prev;
+
+      self->left_prev  = left_stable;
+      self->right_prev = right_stable;
+
+      // Track center line
+      if (center_raw) {
+        self->lost_center_count = 0;
+      } else {
+        self->lost_center_count++;
+      }
+
+      float base = self->base_speed;
+
+      // --------- STATE MACHINE ON exit_phase ----------
+      if (self->exit_phase == EXIT_PHASE_BACKING) {
+        // Phase 0: back straight out of the spot.
+        lf_set(m.left_power, -base);
+        lf_set(m.right_power, -base);
+
+        bool want_left_turn  = (self->parked_spot % 2 == 1); // 1,3,5
+        bool want_right_turn = !want_left_turn;              // 2,4
+
+        if (want_left_turn && left_rising) {
+          self->turning_dir   = -1;
+          self->turning_ticks = self->turn_ticks_90;
+          self->exit_phase    = EXIT_PHASE_TURNING;
+        } else if (want_right_turn && right_rising) {
+          self->turning_dir   = +1;
+          self->turning_ticks = self->turn_ticks_90;
+          self->exit_phase    = EXIT_PHASE_TURNING;
+        }
+
+      } else if (self->exit_phase == EXIT_PHASE_TURNING) {
+        // Phase 1: in-place 90° turn into lane (UP).
+        if (self->turning_ticks > 0) {
+          if (self->turning_dir < 0) {
+            lf_set(m.left_power, -base);
+            lf_set(m.right_power,  base);
+          } else if (self->turning_dir > 0) {
+            lf_set(m.left_power,  base);
+            lf_set(m.right_power, -base);
+          }
+          self->turning_ticks--;
+        } else {
+          // Done turning; begin following line.
+          self->exit_phase = EXIT_PHASE_FOLLOW;
+        }
+
+      } else if (self->exit_phase == EXIT_PHASE_FOLLOW) {
+        // Phase 2: follow line toward exit.
+        float l = base;
+        float r = base;
+
+        if (center_raw && !left_raw && !right_raw) {
+          l = base; r = base;
+        } else if (left_raw && !right_raw) {
+          l = 0.05f; r = 0.20f;
+        } else if (right_raw && !left_raw) {
+          l = 0.20f; r = 0.05f;
+        } else {
+          l = base; r = base;
+        }
+
+        lf_set(m.left_power, l);
+        lf_set(m.right_power, r);
+
+        // Once we lose the line, start extra-forward phase.
+        if (self->lost_center_count > 8) {
+          self->exit_phase        = EXIT_PHASE_EXTRA;
+          self->exit_extra_counter = self->exit_extra_ticks;
+        }
+
+      } else if (self->exit_phase == EXIT_PHASE_EXTRA) {
+        // Phase 3: keep going straight for ~2 seconds.
+        lf_set(m.left_power, base);
+        lf_set(m.right_power, base);
+
+        if (self->exit_extra_counter > 0) {
+          self->exit_extra_counter--;
+        } else {
+          // Done exiting.
+          lf_set(disp.line0, "EXITED (1-5)");
+          lf_set(disp.line1, "");
+          lf_set_mode(EXIT_DONE);
+        }
+      }
+    =}
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // MODE: EXIT_6_9
+  //  - Spots 6..9:
+  //    Phase BACKING: back up until main path detected, but turn DOWN
+  //                   (towards the entrance side; one-way rule).
+  //       even spots (6,8): use first RIGHT rising
+  //       odd spots  (7,9): use first LEFT rising
+  //    Remaining phases are the same as EXIT_1_5: turn, follow, extra.
+  //    NOTE: For a perfect route you might later add intersection counting
+  //          (two left turns toward the final exit path), but this skeleton
+  //          at least enforces one-way “turn down then follow line”.
+  /////////////////////////////////////////////////////////////////////////////
+  mode EXIT_6_9 {
+    reaction(line.reflect)
+      -> m.left_power, m.right_power, disp.line0, disp.line1,
+         reset(EXIT_DONE) {=
+
+      int v_left   = line.reflect->value[0];
+      int v_center = line.reflect->value[2];
+      int v_right  = line.reflect->value[4];
+
+      bool left_raw   = (v_left   < self->line_threshold);
+      bool center_raw = (v_center < self->line_threshold);
+      bool right_raw  = (v_right  < self->line_threshold);
+
+      // Debounce left
+      if (left_raw) {
+        if (self->left_db < 3) self->left_db++;
+      } else {
+        if (self->left_db > 0) self->left_db--;
+      }
+      bool left_stable = (self->left_db >= 2);
+
+      // Debounce right
+      if (right_raw) {
+        if (self->right_db < 3) self->right_db++;
+      } else {
+        if (self->right_db > 0) self->right_db--;
+      }
+      bool right_stable = (self->right_db >= 2);
+
+      bool left_rising  = left_stable  && !self->left_prev;
+      bool right_rising = right_stable && !self->right_prev;
+
+      self->left_prev  = left_stable;
+      self->right_prev = right_stable;
+
+      if (center_raw) {
+        self->lost_center_count = 0;
+      } else {
+        self->lost_center_count++;
+      }
+
+      float base = self->base_speed;
+
+      if (self->exit_phase == EXIT_PHASE_BACKING) {
+        // Phase 0: back straight out of spot.
+        lf_set(m.left_power, -base);
+        lf_set(m.right_power, -base);
+
+        bool even_spot = (self->parked_spot % 2 == 0); // 6,8
+        if (even_spot && right_rising) {
+          // Even spots: turn RIGHT to go "down" the one-way lane.
+          self->turning_dir   = +1;
+          self->turning_ticks = self->turn_ticks_90;
+          self->exit_phase    = EXIT_PHASE_TURNING;
+        } else if (!even_spot && left_rising) {
+          // Odd spots (7,9): turn LEFT to go "down".
+          self->turning_dir   = -1;
+          self->turning_ticks = self->turn_ticks_90;
+          self->exit_phase    = EXIT_PHASE_TURNING;
+        }
+
+      } else if (self->exit_phase == EXIT_PHASE_TURNING) {
+        // Phase 1: 90° turn DOWN into lane.
+        if (self->turning_ticks > 0) {
+          if (self->turning_dir < 0) {
+            lf_set(m.left_power, -base);
+            lf_set(m.right_power,  base);
+          } else if (self->turning_dir > 0) {
+            lf_set(m.left_power,  base);
+            lf_set(m.right_power, -base);
+          }
+          self->turning_ticks--;
+        } else {
+          self->exit_phase = EXIT_PHASE_FOLLOW;
+        }
+
+      } else if (self->exit_phase == EXIT_PHASE_FOLLOW) {
+        // Phase 2: follow one-way path down, then around
+        // (two lefts, etc.) — for now we just follow the line;
+        // the physical layout should constrain the path.
+        float l = base;
+        float r = base;
+
+        if (center_raw && !left_raw && !right_raw) {
+          l = base; r = base;
+        } else if (left_raw && !right_raw) {
+          l = 0.05f; r = 0.20f;
+        } else if (right_raw && !left_raw) {
+          l = 0.20f; r = 0.05f;
+        } else {
+          l = base; r = base;
+        }
+
+        lf_set(m.left_power, l);
+        lf_set(m.right_power, r);
+
+        if (self->lost_center_count > 8) {
+          self->exit_phase         = EXIT_PHASE_EXTRA;
+          self->exit_extra_counter = self->exit_extra_ticks;
+        }
+
+      } else if (self->exit_phase == EXIT_PHASE_EXTRA) {
+        // Phase 3: straight for ~2 seconds after leaving line.
+        lf_set(m.left_power, base);
+        lf_set(m.right_power, base);
+
+        if (self->exit_extra_counter > 0) {
+          self->exit_extra_counter--;
+        } else {
+          lf_set(disp.line0, "EXITED (6-9)");
+          lf_set(disp.line1, "");
+          lf_set_mode(EXIT_DONE);
+        }
+      }
+    =}
+  }
+
+  /////////////////////////////////////////////////////////////////////////////
+  // MODE: EXIT_DONE
+  //  - Robot has already exited; motors are off.
+  /////////////////////////////////////////////////////////////////////////////
+  mode EXIT_DONE {
+    reaction(line.reflect) -> m.left_power, m.right_power {=
+      lf_set(m.left_power, 0.0f);
+      lf_set(m.right_power, 0.0f);
+    =}
+  }
+}
+
+// Simple main for testing ExitRobot alone.
+main reactor {
+  timer t(0, 50 ms)
+  exitRobot = new ExitRobot()
+
+  // Periodic trigger for line sensing.
+  reaction(t) -> exitRobot.trigger {=
+    lf_set(exitRobot.trigger, true);
+  =}
+
+  // Example: start in spot 6 and request exit after 3 seconds.
+  timer set_spot(0, 0)
+  timer do_exit(3 s, 0)
+
+  reaction(set_spot) -> exitRobot.parked_spot_in {=
+    lf_set(exitRobot.parked_spot_in, 6);  // change to test other spots
+  =}
+
+  reaction(do_exit) -> exitRobot.exit_request {=
+    lf_set(exitRobot.exit_request, true);
+  =}
+}
+

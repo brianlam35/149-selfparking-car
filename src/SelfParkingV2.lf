@@ -19,6 +19,12 @@ import Line from "lib/Line.lf"
 #define PHASE_ROW_6_9    2
 #define PHASE_IN_SPUR    3
 
+#define EXIT_PHASE_BACKING   0
+#define EXIT_PHASE_TURNING   1
+#define EXIT_PHASE_FOLLOW    2
+#define EXIT_PHASE_EXTRA     3
+
+
 reactor ParkingRobot {
   //----------------------- INPUTS / OUTPUTS / SUBREACTORS -----------------------
   input trigger: bool
@@ -81,6 +87,12 @@ reactor ParkingRobot {
 
   // For automatic two-left-turn sequence after spot 5 (for 6–9).
   state turning_up_ticks: int = 0   // composite “two lefts + small forward” duration
+
+  // Exit Variables
+  state exit_phase: int = EXIT_PHASE_BACKING;
+  state exit_extra_ticks: int = 40;       // ≈ 2 seconds at 50 ms
+  state exit_extra_counter: int = 0;
+
 
   //----------------------------- STARTUP ----------------------------------------
   reaction(startup) -> disp.line0, disp.line1 {=
