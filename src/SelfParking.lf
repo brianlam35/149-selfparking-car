@@ -55,6 +55,17 @@ reactor ParkingRobot {
     //black line threshold
     state line_threshold: int = 10; //change to black_line
 
+    // ----------------- VARIABLES FOR PARK IN 2-5 --------------------------
+    // turning_dir: -1 = left turn, +1 = right turn, 0 = no turn in progress
+    state turning_ticks: int = 0;
+    state turning_dir: int = 0;
+
+    //are we turning in the right spot
+    state turn_2_5_scheduled: bool = false;
+
+    // cycles to spin 90 degrees
+    state turn_ticks_90: int = 45;
+
 
     # --------------------------------------------------------------------------------------------------
     # -------------------------- MODES -----------------------------------------------------------------
@@ -210,11 +221,126 @@ reactor ParkingRobot {
 
     # -----------------------------STATE 2 : GO TO PARKING SPOT 2-5 --------------------------------------------------
     mode PARK_SPOT_2_5 {
-        
+        reaction(line.reflect) -> m.left_power, m.right_power, disp.line0, disp.line1, reset(PARKED_IDLE) {=
+            
+            // Read values of line sensors
+            int v_left = line.reflect->value[0]; //left sensor
+            int v_center = line.reflect->value[2]; //center sensor
+            int v_right = line.reflect->value[4];
+
+            // detect intersection YES or NO
+            bool left_raw = (v_left < self->line_threshold);
+            bool center_raw = (v_center < self->line_threshold);
+            bool right_raw = (v_right < self->line_threshold);
+
+            // debounce left sensor
+            if (left_raw) {
+                if (self->left_db < 3) self->left_db++;
+            } else {
+                if (self->left_db > 0) self->left_db--;
+            }
+            bool left_stable = (self->left_db >= 2);
+
+
+            // debounce right sensor
+            if (right_raw) {
+                if (self->right_db < 3) self->right_db++;
+            } else {
+                if (self->right_db > 0) self->right_db--;
+            }
+            bool right_stable = (self->right_db >= 2);
+
+
+            bool left_rising = left_stable && !self->left_prev;
+            bool right_rising = right_stable && !self->right_prev;
+
+            self->left_prev = left_stable;
+            self->right_prev = right_stable;
+
+            // TRACK LOSS OF CENTER LINE
+            if (center_raw) {
+                self->lost_center_count = 0;
+            } else {
+                self->lost_center_count++;
+            }
+
+
+            // TURN INTO LOT IF NEEDED
+            if (self->turning_ticks > 0) {
+                float s = self->base_speed;
+                if (self->turning_dir < 0) {
+                    lf_set(m.left_power, -s);
+                    lf_set(m.right_power, s);
+                } else if (self->turning_dir > 0) {
+                    lf_set(m.left_power, s);
+                    lf_set(m.right_power, -s);
+                }
+                self->turning_ticks--;
+            } else {
+                
+                // NORMAL GO FORWARD
+                if (left_rising || right_rising) {
+                    self->counter++;
+                }
+
+                int t = self->target_spot;
+                bool target_is_odd = (t % 2 == 1);
+
+
+                int trigger_counter = target_is_odd ? (t - 2) : (t - 1);
+                if (!self->turn_2_5_scheduled) {
+                    if (target_is_odd && right_rising && self->counter == trigger_counter) {
+                        // Schedule RIGHT 90-degree turn into row for t.
+                        self->turning_dir   = +1;
+                        self->turning_ticks = self->turn_ticks_90;
+                        self->turn_2_5_scheduled = true;
+                    } else if (!target_is_odd && left_rising && self->counter == trigger_counter) {
+                        // Schedule LEFT 90-degree turn into row for t.
+                        self->turning_dir   = -1;
+                        self->turning_ticks = self->turn_ticks_90;
+                        self->turn_2_5_scheduled = true;
+                    }
+                }
+                // ---- If not turning right now, do line following ----
+                if (self->turning_ticks == 0) {
+                    float base = self->base_speed;
+                    float l = base;
+                    float r = base;
+                    if (center_raw && !left_raw && !right_raw) {
+                        // nicely centered
+                        l = base; r = base;
+                    } else if (left_raw && !right_raw) {
+                        // line under left sensor -> steer left (slow left, fast right)
+                        l = 0.05f; r = 0.20f;
+                    } else if (right_raw && !left_raw) {
+                        // line under right sensor -> steer right
+                        l = 0.20f; r = 0.05f;
+                    } else {
+                        // ambiguous, just go forward
+                        l = base; r = base;
+                    }
+                    lf_set(m.left_power, l);
+                    lf_set(m.right_power, r);
+                }
+            }
+            // ======================================================
+            // 3) PARKING CONDITION
+            // ======================================================
+            // Once we've scheduled the turn into this target row AND we
+            // stop seeing the center line for a while, assume we're fully
+            // in the parking spot.
+            if (self->turn_2_5_scheduled &&
+                self->lost_center_count > 8) {   // tune 8 as needed
+                lf_set(m.left_power, 0.0f);
+                lf_set(m.right_power, 0.0f);
+                self->parked_spot = self->target_spot;
+                static char buf[17];
+                snprintf(buf, 17, "PARKED %d", self->parked_spot);
+                lf_set(disp.line0, buf);
+                lf_set(disp.line1, "WAITING TO EXIT");
+                lf_set_mode(PARKED_IDLE);
+            }
+        =}
     }
-
-
-
-
 
 }
