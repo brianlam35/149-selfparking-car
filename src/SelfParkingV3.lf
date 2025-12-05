@@ -1,0 +1,484 @@
+target C {
+    platform: {
+      name: "rp2040",
+      board: "pololu_3pi_2040_robot"
+    },
+    single-threaded: true
+  }
+ 
+  import Display from "lib/Display.lf"
+  import Motors from "lib/Motors.lf"
+  import Line from "lib/Line.lf"
+ 
+  preamble {=
+    /* Keep C headers, but DO NOT define PHASE macros here (they will collide) */
+    #include <math.h>
+    #include <stdio.h>
+  =}
+ 
+  reactor ParkingRobot(
+    // Use the exact phase names used in reaction bodies so generated C has matching fields
+    PHASE_BEFORE_5: int = 0,
+    PHASE_TURNING_UP: int = 1,
+    PHASE_ROW_6_9: int = 2,
+    PHASE_IN_SPUR: int = 3,
+ 
+    // Exit phase constants
+    EXIT_PHASE_BACKING: int = 0,
+    EXIT_PHASE_ALIGNING: int = 1,
+    EXIT_PHASE_DRIVING_OUT: int = 2
+  ) {
+ 
+    //----------------------- INPUTS / OUTPUTS / SUBREACTORS -----------------------
+    input trigger: bool
+    input calibrate: bool
+    input target_spot_in: int
+    input exit_request: bool    // not used yet; for later exit logic
+ 
+    m    = new Motors()
+    line = new Line()
+    disp = new Display()
+ 
+    // Connect trigger/calibrate to line sensors.
+    trigger   -> line.trigger
+    calibrate -> line.calibrate
+ 
+    //----------------------- STATE VARIABLES --------------------------------------
+ 
+    // Target parking spot (1..9). -1 means “none selected yet”.
+    state target_spot: int = -1
+ 
+    // Periodic tick while waiting for target.
+    timer tick(0, 50 ms)
+ 
+    // Parking counter:
+    //  - Starts at -1 before parking.
+    //  - First non-enterable intersection increments to 0.
+    //  - Each subsequent side-line (left/right) increments by 1.
+    state counter: int = -1
+ 
+    // Number of cycles we’ve gone without seeing the center line.
+    state lost_center_count: int = 0
+ 
+    // Debouncing for left/right sensors.
+    state left_db: int = 0
+    state right_db: int = 0
+    state left_prev: bool = false
+    state right_prev: bool = false
+ 
+    // Base forward speed for line following.
+    state base_speed: float = 0.15
+ 
+    // Where we ended up parking (used later for exit).
+    state parked_spot: int = 0
+ 
+    // Threshold for “dark line” vs background.
+    state line_threshold: int = 500
+ 
+    // Turning state:
+    //  turning_dir: -1 = left, +1 = right, 0 = no turn in progress
+    state turning_ticks: int = 0
+    state turning_dir: int = 0
+ 
+    // Internal parking-phase tracker for spots 2–9.
+    // Initialize with the reactor parameter; LF will generate self->PHASE_BEFORE_5.
+    state phase: int = PHASE_BEFORE_5
+ 
+    // How many cycles to spin for a ~90-degree turn (tune experimentally).
+    state turn_ticks_90: int = 45
+ 
+    // For automatic two-left-turn sequence after spot 5 (for 6–9).
+    state turning_up_ticks: int = 0
+ 
+    // ----------------- EXIT LOGIC STATE -----------------
+    state exit_phase: int = EXIT_PHASE_BACKING
+    state exit_extra_ticks: int = 40       // ≈ 2 seconds at 50 ms
+    state exit_extra_counter: int = 0
+ 
+    //----------------------------- STARTUP ----------------------------------------
+    reaction(startup) -> disp.line0, disp.line1 {=
+      lf_set(disp.line0, "Entering Parking Lot");
+      lf_set(disp.line1, "WAITING FOR OPEN SPOT");
+    =}
+ 
+    ////////////////////////////////////////////////////////////////////////////////
+    // STATE 0: WAIT_FOR_TARGET
+    ////////////////////////////////////////////////////////////////////////////////
+    initial mode WAIT_FOR_TARGET {
+      reaction(tick) -> m.left_power, m.right_power, disp.line0, disp.line1 {=
+        lf_set(m.left_power, 0.0f);
+        lf_set(m.right_power, 0.0f);
+ 
+        if (self->target_spot < 0) {
+          lf_set(disp.line0, "WAITING FOR OPEN SPOT");
+          lf_set(disp.line1, "Spot 1..9");
+        } else {
+          static char buf[17];
+          snprintf(buf, 17, "Target:%d", self->target_spot);
+          lf_set(disp.line0, "TARGET SET");
+          lf_set(disp.line1, buf);
+        }
+      =}
+ 
+      reaction(target_spot_in)
+        -> disp.line0, disp.line1,
+           reset(PARK_SPOT_1), reset(PARK_SPOT_2_9) {=
+ 
+        int t = target_spot_in->value;
+ 
+        // NOT VALID PARKING SPOTS
+        if (t < 1 || t > 9) {
+          lf_set(disp.line0, "TARGET OUT OF");
+          lf_set(disp.line1, "BOUNDS (1..9)");
+          return;
+        }
+ 
+        // VALID INPUT
+        self->target_spot = t;
+ 
+        // Reset navigation state before starting to drive.
+        self->counter = -1;
+        self->lost_center_count = 0;
+        self->left_db = 0;
+        self->right_db = 0;
+        self->left_prev = false;
+        self->right_prev = false;
+        self->turning_ticks = 0;
+        self->turning_dir = 0;
+        // Use reactor parameter field (accessible as self->PHASE_BEFORE_5 in C)
+        self->phase = self->PHASE_BEFORE_5;
+        self->turning_up_ticks = 0;
+ 
+        if (t == 1) {
+          lf_set(disp.line0, "GO TO SPOT 1");
+          lf_set(disp.line1, "");
+          lf_set_mode(PARK_SPOT_1);
+        } else {
+          static char buf[32];
+          snprintf(buf, 32, "GO TO SPOT %d", self->target_spot);
+          lf_set(disp.line0, buf);
+          lf_set(disp.line1, "PARK 2-9");
+          lf_set_mode(PARK_SPOT_2_9);
+        }
+      =}
+    }
+ 
+    ////////////////////////////////////////////////////////////////////////////////
+    // STATE 1: PARK_SPOT_1
+    ////////////////////////////////////////////////////////////////////////////////
+    mode PARK_SPOT_1 {
+      reaction(line.reflect)
+        -> m.left_power, m.right_power, disp.line0, disp.line1,
+           reset(PARKED_IDLE) {=
+ 
+        // Read line sensors
+        int v_left   = line.reflect->value[0];
+        int v_center = line.reflect->value[2];
+        int v_right  = line.reflect->value[4];
+ 
+        bool left_raw   = (v_left   < self->line_threshold);
+        bool center_raw = (v_center < self->line_threshold);
+        bool right_raw  = (v_right  < self->line_threshold);
+ 
+        // Debounce left
+        if (left_raw) {
+          if (self->left_db < 3) self->left_db++;
+        } else {
+          if (self->left_db > 0) self->left_db--;
+        }
+        bool left_stable = (self->left_db >= 2);
+ 
+        // Debounce right
+        if (right_raw) {
+          if (self->right_db < 3) self->right_db++;
+        } else {
+          if (self->right_db > 0) self->right_db--;
+        }
+        bool right_stable = (self->right_db >= 2);
+ 
+        bool left_rising  = left_stable  && !self->left_prev;
+        bool right_rising = right_stable && !self->right_prev;
+ 
+        self->left_prev  = left_stable;
+        self->right_prev = right_stable;
+ 
+        // Update intersection counter
+        if (left_rising || right_rising) {
+          self->counter++;
+        }
+ 
+        // Track loss of center line
+        if (center_raw) {
+          self->lost_center_count = 0;
+        } else {
+          self->lost_center_count++;
+        }
+ 
+        // Line following (no intentional turns here)
+        float base = self->base_speed;
+        float l = base;
+        float r = base;
+ 
+        if (center_raw && !left_raw && !right_raw) {
+          l = base; r = base;
+        } else if (left_raw && !right_raw) {
+          l = 0.05f; r = 0.20f;
+        } else if (right_raw && !left_raw) {
+          l = 0.20f; r = 0.05f;
+        } else {
+          l = base; r = base;
+        }
+ 
+        lf_set(m.left_power, l);
+        lf_set(m.right_power, r);
+ 
+        // Stop when driven into spot (center line lost)
+        if (self->lost_center_count > 8) {
+          lf_set(m.left_power, 0.0f);
+          lf_set(m.right_power, 0.0f);
+ 
+          self->parked_spot = 1;
+ 
+          static char buf[17];
+          snprintf(buf, 17, "PARKED %d", self->parked_spot);
+          lf_set(disp.line0, buf);
+          lf_set(disp.line1, "WAITING TO EXIT");
+ 
+          lf_set_mode(PARKED_IDLE);
+        }
+      =}
+    }
+ 
+    ////////////////////////////////////////////////////////////////////////////////
+    // STATE 2: PARK_SPOT_2_9
+    ////////////////////////////////////////////////////////////////////////////////
+    mode PARK_SPOT_2_9 {
+      reaction(line.reflect)
+        -> m.left_power, m.right_power, disp.line0, disp.line1,
+           reset(PARKED_IDLE) {=
+ 
+        // ----------------- READ & THRESHOLD SENSORS -----------------
+        int v_left   = line.reflect->value[0];
+        int v_center = line.reflect->value[2];
+        int v_right  = line.reflect->value[4];
+ 
+        bool left_raw   = (v_left   < self->line_threshold);
+        bool center_raw = (v_center < self->line_threshold);
+        bool right_raw  = (v_right  < self->line_threshold);
+ 
+        // Debounce left
+        if (left_raw) {
+          if (self->left_db < 3) self->left_db++;
+        } else {
+          if (self->left_db > 0) self->left_db--;
+        }
+        bool left_stable = (self->left_db >= 2);
+ 
+        // Debounce right
+        if (right_raw) {
+          if (self->right_db < 3) self->right_db++;
+        } else {
+          if (self->right_db > 0) self->right_db--;
+        }
+        bool right_stable = (self->right_db >= 2);
+ 
+        bool left_rising  = left_stable  && !self->left_prev;
+        bool right_rising = right_stable && !self->right_prev;
+ 
+        self->left_prev  = left_stable;
+        self->right_prev = right_stable;
+ 
+        // Track center line
+        if (center_raw) {
+          self->lost_center_count = 0;
+        } else {
+          self->lost_center_count++;
+        }
+ 
+        // ----------------- HANDLE TURNING IF IN PROGRESS -----------------
+        if (self->turning_ticks > 0) {
+          float s = self->base_speed;
+          if (self->turning_dir < 0) {
+            // left in place
+            lf_set(m.left_power, -s);
+            lf_set(m.right_power,  s);
+          } else if (self->turning_dir > 0) {
+            // right in place
+            lf_set(m.left_power,  s);
+            lf_set(m.right_power, -s);
+          }
+          self->turning_ticks--;
+        } else if (self->phase == self->PHASE_TURNING_UP && self->turning_up_ticks > 0) {
+          // Composite "two lefts + small forward" sequence for 6–9.
+          // Here we approximate the two corners by:
+          //   - left spin for turn_ticks_90,
+          //   - forward for turn_ticks_90,
+          //   - left spin for turn_ticks_90.
+          int block = self->turn_ticks_90;
+          int t = self->turning_up_ticks;
+ 
+          if (t > 2 * block) {
+            // First left turn
+            float s = self->base_speed;
+            lf_set(m.left_power, -s);
+            lf_set(m.right_power,  s);
+          } else if (t > block) {
+            // Forward segment between the two lefts
+            float base = self->base_speed;
+            lf_set(m.left_power, base);
+            lf_set(m.right_power, base);
+          } else {
+            // Second left turn
+            float s = self->base_speed;
+            lf_set(m.left_power, -s);
+            lf_set(m.right_power,  s);
+          }
+ 
+          self->turning_up_ticks--;
+ 
+          if (self->turning_up_ticks <= 0) {
+            // Done with the two-left sequence; now on row 6–9.
+            self->phase = self->PHASE_ROW_6_9;
+            // Do not change counter here; it should still be 5.
+          }
+        } else {
+          // ----------------- NORMAL FORWARD / COUNTING BEHAVIOR -----------------
+          int t = self->target_spot;
+ 
+          if (self->phase == self->PHASE_BEFORE_5) {
+            // Count side lines in the 1–5 region.
+            if (left_rising || right_rising) {
+              self->counter++;
+            }
+ 
+            if (t <= 5) {
+              // Logic for target spots 2–5.
+              bool target_is_odd = (t % 2 == 1); // 3,5 are odd (on right)
+              int trigger_counter = target_is_odd ? (t - 2) : (t - 1);
+ 
+              if (target_is_odd && right_rising && self->counter == trigger_counter) {
+                // Turn RIGHT into the correct branch.
+                self->turning_dir   = +1;
+                self->turning_ticks = self->turn_ticks_90;
+                self->phase = self->PHASE_IN_SPUR;
+              } else if (!target_is_odd && left_rising && self->counter == trigger_counter) {
+                // Turn LEFT into the correct branch.
+                self->turning_dir   = -1;
+                self->turning_ticks = self->turn_ticks_90;
+                self->phase = self->PHASE_IN_SPUR;
+              }
+            } else {
+              // Target is 6–9: keep counting until we hit spot 5.
+              if (self->counter == 5) {
+                // Now start two-left sequence to go up into 6–9 row.
+                self->phase = self->PHASE_TURNING_UP;
+                // Composite duration: two lefts + a forward section.
+                self->turning_up_ticks = 3 * self->turn_ticks_90;
+                self->turning_dir = 0;   // turning_up handles direction.
+              }
+            }
+ 
+          } else if (self->phase == self->PHASE_ROW_6_9) {
+            // We are in the row for spots 6..9.
+            // Now side-line counts should represent 6,7,8,9.
+            if (left_rising || right_rising) {
+              self->counter++;
+            }
+ 
+            bool target_is_odd = (t % 2 == 1); // 7,9 are odd (on right)
+ 
+            if (target_is_odd && right_rising && self->counter == t) {
+              // Turn RIGHT into odd spot (7 or 9).
+              self->turning_dir   = +1;
+              self->turning_ticks = self->turn_ticks_90;
+              self->phase = self->PHASE_IN_SPUR;
+            } else if (!target_is_odd && left_rising && self->counter == t) {
+              // Turn LEFT into even spot (6 or 8).
+              self->turning_dir   = -1;
+              self->turning_ticks = self->turn_ticks_90;
+              self->phase = self->PHASE_IN_SPUR;
+            }
+ 
+          } else if (self->phase == self->PHASE_IN_SPUR) {
+            // Already turned into the spur; just drive straight until line ends.
+            // No special counter logic needed here.
+          }
+ 
+          // ------- Default line following when not actively turning -------
+          if (self->turning_ticks == 0 && !(self->phase == self->PHASE_TURNING_UP && self->turning_up_ticks > 0)) {
+            float base = self->base_speed;
+            float l = base;
+            float r = base;
+ 
+            if (center_raw && !left_raw && !right_raw) {
+              l = base; r = base;
+            } else if (left_raw && !right_raw) {
+              l = 0.05f; r = 0.20f;
+            } else if (right_raw && !left_raw) {
+              l = 0.20f; r = 0.05f;
+            } else {
+              l = base; r = base;
+            }
+ 
+            lf_set(m.left_power, l);
+            lf_set(m.right_power, r);
+          }
+        }
+ 
+        // ----------------- PARKING CONDITION -----------------
+        // Once we are in the spur (phase == PHASE_IN_SPUR) and the center line
+        // has disappeared for a while, assume we are parked.
+        if (self->phase == self->PHASE_IN_SPUR &&
+            self->lost_center_count > 8) {
+          lf_set(m.left_power, 0.0f);
+          lf_set(m.right_power, 0.0f);
+ 
+          self->parked_spot = self->target_spot;
+ 
+          static char buf[17];
+          snprintf(buf, 17, "PARKED %d", self->parked_spot);
+          lf_set(disp.line0, buf);
+          lf_set(disp.line1, "WAITING TO EXIT");
+ 
+          lf_set_mode(PARKED_IDLE);
+        }
+      =}
+    }
+ 
+    ////////////////////////////////////////////////////////////////////////////////
+    // STATE 3: PARKED_IDLE
+    ////////////////////////////////////////////////////////////////////////////////
+    mode PARKED_IDLE {
+      reaction(line.reflect) -> m.left_power, m.right_power {=
+        // Just keep motors off for now.
+        lf_set(m.left_power, 0.0f);
+        lf_set(m.right_power, 0.0f);
+      =}
+    }
+  }
+ 
+  main reactor {
+    timer t(0, 50 ms)
+    timer end_calibration(10 s)
+ 
+    robot = new ParkingRobot()
+ 
+    // Turn calibration on at startup, off after 10 seconds.
+    reaction(startup) -> robot.calibrate {=
+      lf_set(robot.calibrate, true);
+    =}
+ 
+    reaction(end_calibration) -> robot.calibrate {=
+      lf_set(robot.calibrate, false);
+    =}
+ 
+    // Periodic trigger for line sensing.
+    reaction(t) -> robot.trigger {=
+      lf_set(robot.trigger, true);
+    =}
+ 
+    // Example: request spot 6 at startup (you'll replace this with real input).
+    reaction(startup) -> robot.target_spot_in {=
+      lf_set(robot.target_spot_in, 6);
+    =}
+  }
