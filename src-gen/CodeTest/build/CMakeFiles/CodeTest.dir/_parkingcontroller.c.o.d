@@ -85,7 +85,6 @@ CMakeFiles/CodeTest.dir/_parkingcontroller.c.o: \
  /home/lambrian/pico/pico-sdk/src/common/pico_sync/include/pico/mutex.h \
  /home/lambrian/pico/pico-sdk/src/common/pico_sync/include/pico/critical_section.h \
  /home/lambrian/149-selfparking-car/src-gen/CodeTest/include/CodeTest/ParkingController.h \
- /usr/include/newlib/math.h \
  /home/lambrian/149-selfparking-car/src-gen/CodeTest/include/../include/api/schedule.h \
  /home/lambrian/149-selfparking-car/src-gen/CodeTest/include/../include/core/reactor.h \
  /home/lambrian/149-selfparking-car/src-gen/CodeTest/include/../include/core/lf_types.h \

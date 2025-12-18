@@ -1,0 +1,182 @@
+target C {
+  platform: {
+    name: "rp2040",
+    board: "pololu_3pi_2040_robot"
+  },
+  single-threaded: true
+}
+
+import Display from "lib/Display.lf"
+import MotorsWithFeedback from "lib/MotorsWithFeedback.lf"
+import Encoders from "lib/Encoders.lf"
+import Line from "lib/Line.lf"
+
+preamble {=
+  #include <pico/stdlib.h>
+=}
+
+reactor TurnController {
+  input reflect: uint16_t[5]
+  
+  output calibrate: bool
+  output lp: float
+  output rp: float
+  output notify: string
+  output state_display: string
+
+  // Tunables
+  state threshold: int = 220
+  
+  // Hard-coded speeds
+  state forward_speed: float = 0.08
+  state turn_speed: float = 0.08
+  
+  // Edge detection
+  state last_left_high: bool = false
+  
+  // Turn counter (for display)
+  state turn_count: int = 0
+  
+  timer end_calibration(5 s)
+  timer start_test(6 s)
+
+  reaction(startup) -> calibrate, lp, rp, notify, state_display {=
+    lf_set(calibrate, true);
+    lf_set(lp, 0.0f);
+    lf_set(rp, 0.0f);
+    lf_set(notify, "CALIBRATING");
+    lf_set(state_display, "WAIT");
+    printf("=== LEFT TURN TEST ===\n");
+  =}
+
+  reaction(end_calibration) -> calibrate, notify, state_display {=
+    lf_set(calibrate, false);
+    lf_set(notify, "READY");
+    lf_set(state_display, "WAIT");
+    printf("Calibration done, waiting...\n");
+  =}
+
+  // ============================================================
+  // MODE: WAITING - Wait for start timer
+  // ============================================================
+  initial mode WAITING {
+    reaction(start_test) -> reset(FOLLOW), lp, rp, notify, state_display {=
+      printf("Starting FOLLOW mode\n");
+      self->last_left_high = false;
+      self->turn_count = 0;
+      lf_set(notify, "FOLLOW T:0");
+      lf_set(state_display, "FOLLOW");
+      lf_set_mode(FOLLOW);
+    =}
+  }
+
+  // ============================================================
+  // MODE: FOLLOW - Go forward, watch sensor 0 for rising edge
+  // ============================================================
+  mode FOLLOW {
+    reaction(reflect) -> lp, rp, notify, state_display, reset(TURN_LEFT) {=
+      int L0 = reflect->value[0];
+      
+      bool left_high = (L0 > self->threshold);
+      bool left_rising = (left_high && !self->last_left_high);
+      
+      // Hard-coded forward motion
+      lf_set(lp, self->forward_speed);
+      lf_set(rp, self->forward_speed);
+      
+      // Check for rising edge on sensor 0 ONLY
+      if (left_rising) {
+        self->turn_count++;
+        printf("SENSOR 0 TRIGGERED #%d -> TURN_LEFT\n", self->turn_count);
+        
+        char msg[20];
+        snprintf(msg, sizeof(msg), "TURN! T:%d", self->turn_count);
+        lf_set(notify, msg);
+        lf_set(state_display, "TURN_LEFT");
+        lf_set_mode(TURN_LEFT);
+      }
+      
+      // Update edge detection state
+      self->last_left_high = left_high;
+    =}
+  }
+
+  // ============================================================
+  // MODE: TURN_LEFT - Turn left until sensor 0 sees WHITE, then front sensors see line
+  // Phase 1: Keep turning while sensor 0 still sees black
+  // Phase 2: Once sensor 0 sees white, wait for front sensors to reacquire line
+  // ============================================================
+  mode TURN_LEFT {
+    reaction(reflect) -> lp, rp, notify, state_display, reset(FOLLOW) {=
+      int L0 = reflect->value[0];
+      int CL = reflect->value[1];
+      int C  = reflect->value[2];
+      int CR = reflect->value[3];
+      
+      bool left_high = (L0 > self->threshold);
+      bool cl_high = (CL > self->threshold);
+      bool c_high  = (C  > self->threshold);
+      bool cr_high = (CR > self->threshold);
+      bool all_front_on_line = (cl_high && c_high && cr_high);
+      
+      // Hard-coded left turn: left wheel stopped, right wheel forward
+      lf_set(lp, 0.0f);
+      lf_set(rp, self->turn_speed);
+      
+      // Turn complete when:
+      // 1. Sensor 0 is OFF (rotated past the black tape)
+      // 2. AND all front sensors see the line
+      if (!left_high && all_front_on_line) {
+        printf("TURN COMPLETE (L0 white + front on line) -> FOLLOW\n");
+        
+        // Reset edge detection so sensor 0 can trigger again
+        self->last_left_high = false;
+        
+        char msg[20];
+        snprintf(msg, sizeof(msg), "FOLLOW T:%d", self->turn_count);
+        lf_set(notify, msg);
+        lf_set(state_display, "FOLLOW");
+        lf_set_mode(FOLLOW);
+      }
+    =}
+  }
+}
+
+// ============================================================
+// MAIN REACTOR
+// ============================================================
+main reactor {
+  timer t(0, 10 ms)
+
+  controller = new TurnController()
+  disp       = new Display()
+  motors     = new MotorsWithFeedback()
+  encoder    = new Encoders()
+  line       = new Line()
+
+  // Display
+  controller.notify -> disp.line0
+  controller.state_display -> disp.line1
+
+  // Sensors
+  line.reflect -> controller.reflect
+  
+  // Motors - direct from controller (no arbiter needed)
+  controller.lp -> motors.left_speed
+  controller.rp -> motors.right_speed
+
+  // Calibration
+  controller.calibrate -> line.calibrate
+
+  // Encoders
+  encoder.left  -> motors.left
+  encoder.right -> motors.right
+  
+  reaction(t) -> encoder.triggser {=
+    lf_set(encoder.trigger, true);
+  =}
+
+  reaction(t) -> line.trigger {=
+    lf_set(line.trigger, true);
+  =}
+}

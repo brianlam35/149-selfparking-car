@@ -3,18 +3,11 @@
  * ==========================
  * 
  * Layout:
- *   Entry has EXIT on first left (must skip)
- *   Spot 1: Straight ahead at end of entry path (skip exit)
- *   Spots 2-5: Skip exit, then 1 left turn into corridor
+ *   Spot 1: Straight ahead at end of entry path
+ *   Spots 2-5: 1 left turn into corridor
  *     - Spots 2,4 on LEFT side (turn left)
  *     - Spots 3,5 on RIGHT side (turn right)
- *   Spots 6-9: Skip exit, then 3 left turns to reach corridor
- *     - Count 1: Exit (skip)
- *     - Count 2: Turn into corridor 2-5
- *     - Count 3: Pass spot 2
- *     - Count 4: Pass spot 4  
- *     - Count 5: First turn toward 6-9
- *     - Count 6: Second turn into corridor 6-9
+ *   Spots 6-9: 3 left turns into corridor
  *     - Spots 6,8 on LEFT side (turn left)
  *     - Spots 7,9 on RIGHT side (turn right)
  * 
@@ -55,13 +48,11 @@ reactor ParkingController {
   state threshold: int = 220
   state forward_speed: float = 0.08
   state turn_speed: float = 0.08
-  state backup_speed: float = -0.08
   
   // State tracking
   state parking_spot: int = 0
   state spot_count: int = 0          // Counts spots passed in corridor
   state turn_count: int = 0          // Counts left turns made (for spots 6-9)
-  state exit_count: int = 0          // Counts left turns during exit
   state last_left_high: bool = false
   state last_right_high: bool = false
   
@@ -118,7 +109,7 @@ reactor ParkingController {
 
   // ============================================================
   // MODE: FOLLOW_TO_SPOT_1 - Follow line straight to spot 1
-  // Skip the exit (first left), park when line ends
+  // Park when line ends
   // ============================================================
   mode FOLLOW_TO_SPOT_1 {
     reaction(reflect) -> lp, rp, notify, state_display, reset(PARKED) {=
@@ -127,9 +118,6 @@ reactor ParkingController {
       int C  = reflect->value[2];
       int CR = reflect->value[3];
       int R4 = reflect->value[4];
-      
-      bool left_high = (L0 > self->threshold);
-      bool left_rising = (left_high && !self->last_left_high);
       
       bool all_white = (L0 < self->threshold && CL < self->threshold && 
                        C < self->threshold && CR < self->threshold && R4 < self->threshold);
@@ -153,17 +141,6 @@ reactor ParkingController {
       lf_set(lp, left_power);
       lf_set(rp, right_power);
       
-      // Count left triggers (to skip exit at count 1)
-      if (left_rising) {
-        self->spot_count++;
-        char msg[20];
-        snprintf(msg, sizeof(msg), "SKIP:%d", self->spot_count);
-        lf_set(notify, msg);
-        printf("Left trigger %d (skipping exit)\n", self->spot_count);
-      }
-      
-      self->last_left_high = left_high;
-      
       // Stop when line ends (spot 1 is at the end)
       if (all_white) {
         printf("=== PARKED IN SPOT 1 ===\n");
@@ -177,9 +154,8 @@ reactor ParkingController {
   }
 
   // ============================================================
-  // MODE: FOLLOW_TO_CORRIDOR_2_5 - Follow line until second left sensor trigger
-  // Count 1: Exit (skip)
-  // Count 2: Turn into corridor 2-5
+  // MODE: FOLLOW_TO_CORRIDOR_2_5 - Follow line until left sensor triggers
+  // Then turn left into corridor (1 turn for spots 2-5)
   // ============================================================
   mode FOLLOW_TO_CORRIDOR_2_5 {
     reaction(reflect) -> lp, rp, notify, state_display, reset(TURN_LEFT) {=
@@ -210,25 +186,12 @@ reactor ParkingController {
       lf_set(lp, left_power);
       lf_set(rp, right_power);
       
-      // Left sensor rising edge
+      // Left sensor rising edge -> turn into corridor
       if (left_rising) {
-        self->spot_count++;
-        
-        char msg[20];
-        snprintf(msg, sizeof(msg), "CNT:%d", self->spot_count);
-        lf_set(notify, msg);
-        printf("Left trigger count=%d\n", self->spot_count);
-        
-        if (self->spot_count == 1) {
-          // Skip exit
-          printf("Skipping exit\n");
-        } else if (self->spot_count == 2) {
-          // Turn into corridor 2-5
-          printf("Count 2 -> TURN_LEFT (into corridor 2-5)\n");
-          lf_set(notify, "TURN->2-5");
-          lf_set(state_display, "TURN_L");
-          lf_set_mode(TURN_LEFT);
-        }
+        printf("Left sensor triggered -> TURN_LEFT (turn 1 for 2-5)\n");
+        lf_set(notify, "TURN 1");
+        lf_set(state_display, "TURN_L");
+        lf_set_mode(TURN_LEFT);
       }
       
       self->last_left_high = left_high;
@@ -237,12 +200,11 @@ reactor ParkingController {
 
   // ============================================================
   // MODE: FOLLOW_TO_CORRIDOR_6_9 - Follow line, counting left sensor triggers
-  // Count 1: Exit (skip)
-  // Count 2: Turn into corridor 2-5
-  // Count 3: Pass spot 2
-  // Count 4: Pass spot 4
-  // Count 5: First turn toward 6-9
-  // Count 6: Second turn into corridor 6-9
+  // Count 1: Turn into corridor 2-5
+  // Count 2: Pass spot 2
+  // Count 3: Pass spot 4
+  // Count 4: First turn toward 6-9
+  // Count 5: Second turn into corridor 6-9
   // ============================================================
   mode FOLLOW_TO_CORRIDOR_6_9 {
     reaction(reflect) -> lp, rp, notify, state_display, reset(TURN_LEFT_6_9) {=
@@ -278,20 +240,17 @@ reactor ParkingController {
         self->spot_count++;
         
         char msg[20];
-        snprintf(msg, sizeof(msg), "CNT:%d/6", self->spot_count);
+        snprintf(msg, sizeof(msg), "CNT:%d/5", self->spot_count);
         lf_set(notify, msg);
         printf("Left trigger count=%d\n", self->spot_count);
         
-        if (self->spot_count == 1) {
-          // Skip exit
-          printf("Skipping exit\n");
-        } else if (self->spot_count == 2 || self->spot_count == 5 || self->spot_count == 6) {
-          // Turn at counts 2, 5, 6
+        // Turn at counts 1, 4, 5
+        if (self->spot_count == 1 || self->spot_count == 4 || self->spot_count == 5) {
           printf("Count %d -> TURN_LEFT_6_9\n", self->spot_count);
           lf_set(state_display, "TURN_L");
           lf_set_mode(TURN_LEFT_6_9);
         }
-        // Counts 3, 4 just pass spots, keep following
+        // Counts 2, 3 just pass spots, keep following
       }
       
       self->last_left_high = left_high;
@@ -300,7 +259,7 @@ reactor ParkingController {
 
   // ============================================================
   // MODE: TURN_LEFT_6_9 - Execute left turn for spots 6-9 path
-  // After count 6 turn completes, enter corridor 6-9
+  // After count 5 turn completes, enter corridor 6-9
   // ============================================================
   mode TURN_LEFT_6_9 {
     reaction(reflect) -> lp, rp, notify, state_display, reset(FOLLOW_TO_CORRIDOR_6_9), reset(FOLLOW_IN_CORRIDOR_6_9) {=
@@ -324,10 +283,10 @@ reactor ParkingController {
         self->last_left_high = false;
         self->last_right_high = false;
         
-        if (self->spot_count >= 6) {
+        if (self->spot_count >= 5) {
           // All turns done, now in corridor for spots 6-9
           self->spot_count = 0;  // Reset for counting spots in corridor
-          printf("Turn complete (count 6) -> FOLLOW_IN_CORRIDOR_6_9\n");
+          printf("Turn complete (count 5) -> FOLLOW_IN_CORRIDOR_6_9\n");
           lf_set(notify, "IN 6-9");
           lf_set(state_display, "CORR69");
           lf_set_mode(FOLLOW_IN_CORRIDOR_6_9);
@@ -335,7 +294,7 @@ reactor ParkingController {
           // More to go, continue following
           printf("Turn complete (count %d) -> continue following\n", self->spot_count);
           char msg[20];
-          snprintf(msg, sizeof(msg), "CNT:%d/6", self->spot_count);
+          snprintf(msg, sizeof(msg), "CNT:%d/5", self->spot_count);
           lf_set(notify, msg);
           lf_set(state_display, "TO 6-9");
           lf_set_mode(FOLLOW_TO_CORRIDOR_6_9);
@@ -370,7 +329,6 @@ reactor ParkingController {
         
         self->last_left_high = false;
         self->last_right_high = false;
-        self->spot_count = 0;  // Reset for counting spots in corridor
         
         lf_set(notify, "IN 2-5");
         lf_set(state_display, "CORR25");
@@ -674,8 +632,7 @@ reactor ParkingController {
   }
 
   // ============================================================
-  // MODE: PARKED - Done, wait for exit command
-  // Send target_spot = 0 to exit
+  // MODE: PARKED - Done
   // ============================================================
   mode PARKED {
     reaction(target_spot) -> notify {=
@@ -691,6 +648,7 @@ reactor ParkingController {
 main reactor {
   timer t(0, 10 ms)
   timer send_target(6 s)
+
   controller = new ParkingController()
   disp       = new Display()
   motors     = new MotorsWithFeedback()
@@ -699,7 +657,7 @@ main reactor {
 
   // TEST: Send target spot after calibration
   reaction(send_target) -> controller.target_spot {=
-    lf_set(controller.target_spot, 7);  // Change to 1-9 to test different spots
+    lf_set(controller.target_spot, 3);  // Change to 1-9 to test different spots
   =}
 
   // Display

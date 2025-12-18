@@ -62,8 +62,6 @@ add_executable(
     lib/schedule.c
     _codetest_main.c
     _parkingcontroller.c
-    _linefollower.c
-    _motorarbiter.c
     _display.c
     _motorswithfeedback.c
     _motors.c

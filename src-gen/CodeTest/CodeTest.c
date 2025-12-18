@@ -16,8 +16,6 @@ int main(void) {
 }
 void lf_set_default_command_line_options() {}
 #include "_parkingcontroller.h"
-#include "_linefollower.h"
-#include "_motorarbiter.h"
 #include "_display.h"
 #include "_motors.h"
 #include "_picontrol.h"
@@ -33,7 +31,7 @@ typedef enum {
 static environment_t environments[num_environments];
 // 'Create' and initialize the environments in the program
 void lf_create_environments() {
-    environment_init(&environments[codetest_main],"codetest_main",codetest_main,_lf_number_of_workers,3,4,0,0,20,1,0,0,NULL);
+    environment_init(&environments[codetest_main],"codetest_main",codetest_main,_lf_number_of_workers,3,4,0,0,15,1,0,0,NULL);
 }
 // Update the pointer argument to point to the beginning of the environment array
 // and return the size of that array
@@ -115,10 +113,6 @@ void _lf_initialize_trigger_objects() {
     SUPPRESS_UNUSED_WARNING(codetest_main_self);
     _parkingcontroller_self_t* codetest_controller_self[1];
     SUPPRESS_UNUSED_WARNING(codetest_controller_self);
-    _linefollower_self_t* codetest_line_follower_self[1];
-    SUPPRESS_UNUSED_WARNING(codetest_line_follower_self);
-    _motorarbiter_self_t* codetest_motor_arbiter_self[1];
-    SUPPRESS_UNUSED_WARNING(codetest_motor_arbiter_self);
     _display_self_t* codetest_disp_self[1];
     SUPPRESS_UNUSED_WARNING(codetest_disp_self);
     _motorswithfeedback_self_t* codetest_motors_self[1];
@@ -169,10 +163,6 @@ void _lf_initialize_trigger_objects() {
         
         
         // width of -2 indicates that it is not a multiport.
-        codetest_controller_self[0]->_lf_line_enable_width = -2;
-        
-        
-        // width of -2 indicates that it is not a multiport.
         codetest_controller_self[0]->_lf_lp_width = -2;
         
         
@@ -197,7 +187,15 @@ void _lf_initialize_trigger_objects() {
         } // End scoping.
         { // For scoping
             static float _initial = 0.08;
+            codetest_controller_self[0]->forward_speed = _initial;
+        } // End scoping.
+        { // For scoping
+            static float _initial = 0.08;
             codetest_controller_self[0]->turn_speed = _initial;
+        } // End scoping.
+        { // For scoping
+            static float _initial = -0.08;
+            codetest_controller_self[0]->backup_speed = _initial;
         } // End scoping.
         { // For scoping
             static int _initial = 0;
@@ -205,7 +203,15 @@ void _lf_initialize_trigger_objects() {
         } // End scoping.
         { // For scoping
             static int _initial = 0;
-            codetest_controller_self[0]->left_trigger_count = _initial;
+            codetest_controller_self[0]->spot_count = _initial;
+        } // End scoping.
+        { // For scoping
+            static int _initial = 0;
+            codetest_controller_self[0]->turn_count = _initial;
+        } // End scoping.
+        { // For scoping
+            static int _initial = 0;
+            codetest_controller_self[0]->exit_count = _initial;
         } // End scoping.
         { // For scoping
             static bool _initial = false;
@@ -231,111 +237,17 @@ void _lf_initialize_trigger_objects() {
         codetest_controller_self[0]->_lf__reaction_6.deadline = NEVER;
         codetest_controller_self[0]->_lf__reaction_7.deadline = NEVER;
         codetest_controller_self[0]->_lf__reaction_8.deadline = NEVER;
+        codetest_controller_self[0]->_lf__reaction_9.deadline = NEVER;
+        codetest_controller_self[0]->_lf__reaction_10.deadline = NEVER;
+        codetest_controller_self[0]->_lf__reaction_11.deadline = NEVER;
+        codetest_controller_self[0]->_lf__reaction_12.deadline = NEVER;
+        codetest_controller_self[0]->_lf__reaction_13.deadline = NEVER;
         #if !defined LF_SINGLE_THREADED
         codetest_controller_self[0]->base.reactor_mutex = NULL;
         #endif
         // Register for transition handling
         environments[codetest_main].modes->modal_reactor_states[modal_reactor_count[codetest_main]++] = &((self_base_t*)codetest_controller_self[0])->_lf__mode_state;
         //***** End initializing CodeTest.controller
-    }
-    {
-        _codetest_main_main_self_t *self = codetest_main_self[0];
-        // ***** Start initializing CodeTest.line_follower of class LineFollower
-        codetest_line_follower_self[0] = new__linefollower();
-        codetest_line_follower_self[0]->base.environment = &environments[codetest_main];
-        bank_index = 0; SUPPRESS_UNUSED_WARNING(bank_index);
-        
-        
-        // width of -2 indicates that it is not a multiport.
-        codetest_line_follower_self[0]->_lf_lp_width = -2;
-        
-        
-        // width of -2 indicates that it is not a multiport.
-        codetest_line_follower_self[0]->_lf_rp_width = -2;
-        // width of -2 indicates that it is not a multiport.
-        codetest_line_follower_self[0]->_lf_reflect_width = -2;
-        // width of -2 indicates that it is not a multiport.
-        codetest_line_follower_self[0]->_lf_enable_width = -2;
-        { // For scoping
-            static float _initial = 0.15;
-            codetest_line_follower_self[0]->kp = _initial;
-        } // End scoping.
-        { // For scoping
-            static float _initial = 0.0;
-            codetest_line_follower_self[0]->ki = _initial;
-        } // End scoping.
-        { // For scoping
-            static float _initial = 0.05;
-            codetest_line_follower_self[0]->kd = _initial;
-        } // End scoping.
-        { // For scoping
-            static float _initial = 0.10;
-            codetest_line_follower_self[0]->base_speed = _initial;
-        } // End scoping.
-        { // For scoping
-            static float _initial = 0.15;
-            codetest_line_follower_self[0]->max_speed = _initial;
-        } // End scoping.
-        { // For scoping
-            static int _initial = 220;
-            codetest_line_follower_self[0]->threshold = _initial;
-        } // End scoping.
-        { // For scoping
-            static float _initial = 0.0;
-            codetest_line_follower_self[0]->last_error = _initial;
-        } // End scoping.
-        { // For scoping
-            static float _initial = 0.0;
-            codetest_line_follower_self[0]->integral = _initial;
-        } // End scoping.
-        { // For scoping
-            static bool _initial = false;
-            codetest_line_follower_self[0]->enabled = _initial;
-        } // End scoping.
-    
-        codetest_line_follower_self[0]->_lf__reaction_0.deadline = NEVER;
-        codetest_line_follower_self[0]->_lf__reaction_1.deadline = NEVER;
-        #if !defined LF_SINGLE_THREADED
-        codetest_line_follower_self[0]->base.reactor_mutex = NULL;
-        #endif
-        //***** End initializing CodeTest.line_follower
-    }
-    {
-        _codetest_main_main_self_t *self = codetest_main_self[0];
-        // ***** Start initializing CodeTest.motor_arbiter of class MotorArbiter
-        codetest_motor_arbiter_self[0] = new__motorarbiter();
-        codetest_motor_arbiter_self[0]->base.environment = &environments[codetest_main];
-        bank_index = 0; SUPPRESS_UNUSED_WARNING(bank_index);
-        
-        
-        // width of -2 indicates that it is not a multiport.
-        codetest_motor_arbiter_self[0]->_lf_lp_width = -2;
-        
-        
-        // width of -2 indicates that it is not a multiport.
-        codetest_motor_arbiter_self[0]->_lf_rp_width = -2;
-        // width of -2 indicates that it is not a multiport.
-        codetest_motor_arbiter_self[0]->_lf_controller_lp_width = -2;
-        // width of -2 indicates that it is not a multiport.
-        codetest_motor_arbiter_self[0]->_lf_controller_rp_width = -2;
-        // width of -2 indicates that it is not a multiport.
-        codetest_motor_arbiter_self[0]->_lf_line_follower_lp_width = -2;
-        // width of -2 indicates that it is not a multiport.
-        codetest_motor_arbiter_self[0]->_lf_line_follower_rp_width = -2;
-        // width of -2 indicates that it is not a multiport.
-        codetest_motor_arbiter_self[0]->_lf_use_line_follower_width = -2;
-        { // For scoping
-            static bool _initial = false;
-            codetest_motor_arbiter_self[0]->use_follower = _initial;
-        } // End scoping.
-    
-        codetest_motor_arbiter_self[0]->_lf__reaction_0.deadline = NEVER;
-        codetest_motor_arbiter_self[0]->_lf__reaction_1.deadline = NEVER;
-        codetest_motor_arbiter_self[0]->_lf__reaction_2.deadline = NEVER;
-        #if !defined LF_SINGLE_THREADED
-        codetest_motor_arbiter_self[0]->base.reactor_mutex = NULL;
-        #endif
-        //***** End initializing CodeTest.motor_arbiter
     }
     {
         _codetest_main_main_self_t *self = codetest_main_self[0];
@@ -610,25 +522,22 @@ void _lf_initialize_trigger_objects() {
         
             // Total number of outputs (single ports and multiport channels)
             // produced by reaction_1 of CodeTest.controller.
-            codetest_controller_self[0]->_lf__reaction_0.num_outputs = 6;
+            codetest_controller_self[0]->_lf__reaction_0.num_outputs = 5;
             // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
             // struct for this reaction.
             codetest_controller_self[0]->_lf__reaction_0.triggers = (trigger_t***)lf_allocate(
-                    6, sizeof(trigger_t**),
+                    5, sizeof(trigger_t**),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_0.triggered_sizes = (int*)lf_allocate(
-                    6, sizeof(int),
+                    5, sizeof(int),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_0.output_produced = (bool**)lf_allocate(
-                    6, sizeof(bool*),
+                    5, sizeof(bool*),
                     &codetest_controller_self[0]->base.allocations);
             {
                 int count = 0; SUPPRESS_UNUSED_WARNING(count);
                 {
                     codetest_controller_self[0]->_lf__reaction_0.output_produced[count++] = &codetest_controller_self[0]->_lf_calibrate.is_present;
-                }
-                {
-                    codetest_controller_self[0]->_lf__reaction_0.output_produced[count++] = &codetest_controller_self[0]->_lf_line_enable.is_present;
                 }
                 {
                     codetest_controller_self[0]->_lf__reaction_0.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
@@ -675,22 +584,25 @@ void _lf_initialize_trigger_objects() {
             // ** End initialization for reaction 1 of CodeTest.controller
             // Total number of outputs (single ports and multiport channels)
             // produced by reaction_3 of CodeTest.controller.
-            codetest_controller_self[0]->_lf__reaction_2.num_outputs = 3;
+            codetest_controller_self[0]->_lf__reaction_2.num_outputs = 4;
             // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
             // struct for this reaction.
             codetest_controller_self[0]->_lf__reaction_2.triggers = (trigger_t***)lf_allocate(
-                    3, sizeof(trigger_t**),
+                    4, sizeof(trigger_t**),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_2.triggered_sizes = (int*)lf_allocate(
-                    3, sizeof(int),
+                    4, sizeof(int),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_2.output_produced = (bool**)lf_allocate(
-                    3, sizeof(bool*),
+                    4, sizeof(bool*),
                     &codetest_controller_self[0]->base.allocations);
             {
                 int count = 0; SUPPRESS_UNUSED_WARNING(count);
                 {
-                    codetest_controller_self[0]->_lf__reaction_2.output_produced[count++] = &codetest_controller_self[0]->_lf_line_enable.is_present;
+                    codetest_controller_self[0]->_lf__reaction_2.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_2.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
                 }
                 {
                     codetest_controller_self[0]->_lf__reaction_2.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
@@ -703,22 +615,25 @@ void _lf_initialize_trigger_objects() {
             // ** End initialization for reaction 2 of CodeTest.controller
             // Total number of outputs (single ports and multiport channels)
             // produced by reaction_4 of CodeTest.controller.
-            codetest_controller_self[0]->_lf__reaction_3.num_outputs = 3;
+            codetest_controller_self[0]->_lf__reaction_3.num_outputs = 4;
             // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
             // struct for this reaction.
             codetest_controller_self[0]->_lf__reaction_3.triggers = (trigger_t***)lf_allocate(
-                    3, sizeof(trigger_t**),
+                    4, sizeof(trigger_t**),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_3.triggered_sizes = (int*)lf_allocate(
-                    3, sizeof(int),
+                    4, sizeof(int),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_3.output_produced = (bool**)lf_allocate(
-                    3, sizeof(bool*),
+                    4, sizeof(bool*),
                     &codetest_controller_self[0]->base.allocations);
             {
                 int count = 0; SUPPRESS_UNUSED_WARNING(count);
                 {
-                    codetest_controller_self[0]->_lf__reaction_3.output_produced[count++] = &codetest_controller_self[0]->_lf_line_enable.is_present;
+                    codetest_controller_self[0]->_lf__reaction_3.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_3.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
                 }
                 {
                     codetest_controller_self[0]->_lf__reaction_3.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
@@ -731,17 +646,17 @@ void _lf_initialize_trigger_objects() {
             // ** End initialization for reaction 3 of CodeTest.controller
             // Total number of outputs (single ports and multiport channels)
             // produced by reaction_5 of CodeTest.controller.
-            codetest_controller_self[0]->_lf__reaction_4.num_outputs = 5;
+            codetest_controller_self[0]->_lf__reaction_4.num_outputs = 4;
             // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
             // struct for this reaction.
             codetest_controller_self[0]->_lf__reaction_4.triggers = (trigger_t***)lf_allocate(
-                    5, sizeof(trigger_t**),
+                    4, sizeof(trigger_t**),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_4.triggered_sizes = (int*)lf_allocate(
-                    5, sizeof(int),
+                    4, sizeof(int),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_4.output_produced = (bool**)lf_allocate(
-                    5, sizeof(bool*),
+                    4, sizeof(bool*),
                     &codetest_controller_self[0]->base.allocations);
             {
                 int count = 0; SUPPRESS_UNUSED_WARNING(count);
@@ -750,9 +665,6 @@ void _lf_initialize_trigger_objects() {
                 }
                 {
                     codetest_controller_self[0]->_lf__reaction_4.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
-                }
-                {
-                    codetest_controller_self[0]->_lf__reaction_4.output_produced[count++] = &codetest_controller_self[0]->_lf_line_enable.is_present;
                 }
                 {
                     codetest_controller_self[0]->_lf__reaction_4.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
@@ -765,22 +677,25 @@ void _lf_initialize_trigger_objects() {
             // ** End initialization for reaction 4 of CodeTest.controller
             // Total number of outputs (single ports and multiport channels)
             // produced by reaction_6 of CodeTest.controller.
-            codetest_controller_self[0]->_lf__reaction_5.num_outputs = 3;
+            codetest_controller_self[0]->_lf__reaction_5.num_outputs = 4;
             // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
             // struct for this reaction.
             codetest_controller_self[0]->_lf__reaction_5.triggers = (trigger_t***)lf_allocate(
-                    3, sizeof(trigger_t**),
+                    4, sizeof(trigger_t**),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_5.triggered_sizes = (int*)lf_allocate(
-                    3, sizeof(int),
+                    4, sizeof(int),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_5.output_produced = (bool**)lf_allocate(
-                    3, sizeof(bool*),
+                    4, sizeof(bool*),
                     &codetest_controller_self[0]->base.allocations);
             {
                 int count = 0; SUPPRESS_UNUSED_WARNING(count);
                 {
-                    codetest_controller_self[0]->_lf__reaction_5.output_produced[count++] = &codetest_controller_self[0]->_lf_line_enable.is_present;
+                    codetest_controller_self[0]->_lf__reaction_5.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_5.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
                 }
                 {
                     codetest_controller_self[0]->_lf__reaction_5.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
@@ -793,17 +708,17 @@ void _lf_initialize_trigger_objects() {
             // ** End initialization for reaction 5 of CodeTest.controller
             // Total number of outputs (single ports and multiport channels)
             // produced by reaction_7 of CodeTest.controller.
-            codetest_controller_self[0]->_lf__reaction_6.num_outputs = 5;
+            codetest_controller_self[0]->_lf__reaction_6.num_outputs = 4;
             // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
             // struct for this reaction.
             codetest_controller_self[0]->_lf__reaction_6.triggers = (trigger_t***)lf_allocate(
-                    5, sizeof(trigger_t**),
+                    4, sizeof(trigger_t**),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_6.triggered_sizes = (int*)lf_allocate(
-                    5, sizeof(int),
+                    4, sizeof(int),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_6.output_produced = (bool**)lf_allocate(
-                    5, sizeof(bool*),
+                    4, sizeof(bool*),
                     &codetest_controller_self[0]->base.allocations);
             {
                 int count = 0; SUPPRESS_UNUSED_WARNING(count);
@@ -812,9 +727,6 @@ void _lf_initialize_trigger_objects() {
                 }
                 {
                     codetest_controller_self[0]->_lf__reaction_6.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
-                }
-                {
-                    codetest_controller_self[0]->_lf__reaction_6.output_produced[count++] = &codetest_controller_self[0]->_lf_line_enable.is_present;
                 }
                 {
                     codetest_controller_self[0]->_lf__reaction_6.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
@@ -827,23 +739,20 @@ void _lf_initialize_trigger_objects() {
             // ** End initialization for reaction 6 of CodeTest.controller
             // Total number of outputs (single ports and multiport channels)
             // produced by reaction_8 of CodeTest.controller.
-            codetest_controller_self[0]->_lf__reaction_7.num_outputs = 5;
+            codetest_controller_self[0]->_lf__reaction_7.num_outputs = 4;
             // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
             // struct for this reaction.
             codetest_controller_self[0]->_lf__reaction_7.triggers = (trigger_t***)lf_allocate(
-                    5, sizeof(trigger_t**),
+                    4, sizeof(trigger_t**),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_7.triggered_sizes = (int*)lf_allocate(
-                    5, sizeof(int),
+                    4, sizeof(int),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_7.output_produced = (bool**)lf_allocate(
-                    5, sizeof(bool*),
+                    4, sizeof(bool*),
                     &codetest_controller_self[0]->base.allocations);
             {
                 int count = 0; SUPPRESS_UNUSED_WARNING(count);
-                {
-                    codetest_controller_self[0]->_lf__reaction_7.output_produced[count++] = &codetest_controller_self[0]->_lf_line_enable.is_present;
-                }
                 {
                     codetest_controller_self[0]->_lf__reaction_7.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
                 }
@@ -861,136 +770,184 @@ void _lf_initialize_trigger_objects() {
             // ** End initialization for reaction 7 of CodeTest.controller
             // Total number of outputs (single ports and multiport channels)
             // produced by reaction_9 of CodeTest.controller.
-            codetest_controller_self[0]->_lf__reaction_8.num_outputs = 1;
+            codetest_controller_self[0]->_lf__reaction_8.num_outputs = 4;
             // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
             // struct for this reaction.
             codetest_controller_self[0]->_lf__reaction_8.triggers = (trigger_t***)lf_allocate(
-                    1, sizeof(trigger_t**),
+                    4, sizeof(trigger_t**),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_8.triggered_sizes = (int*)lf_allocate(
-                    1, sizeof(int),
+                    4, sizeof(int),
                     &codetest_controller_self[0]->base.allocations);
             codetest_controller_self[0]->_lf__reaction_8.output_produced = (bool**)lf_allocate(
+                    4, sizeof(bool*),
+                    &codetest_controller_self[0]->base.allocations);
+            {
+                int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                {
+                    codetest_controller_self[0]->_lf__reaction_8.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_8.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_8.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_8.output_produced[count++] = &codetest_controller_self[0]->_lf_state_display.is_present;
+                }
+            }
+            
+            // ** End initialization for reaction 8 of CodeTest.controller
+            // Total number of outputs (single ports and multiport channels)
+            // produced by reaction_10 of CodeTest.controller.
+            codetest_controller_self[0]->_lf__reaction_9.num_outputs = 4;
+            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+            // struct for this reaction.
+            codetest_controller_self[0]->_lf__reaction_9.triggers = (trigger_t***)lf_allocate(
+                    4, sizeof(trigger_t**),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_9.triggered_sizes = (int*)lf_allocate(
+                    4, sizeof(int),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_9.output_produced = (bool**)lf_allocate(
+                    4, sizeof(bool*),
+                    &codetest_controller_self[0]->base.allocations);
+            {
+                int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                {
+                    codetest_controller_self[0]->_lf__reaction_9.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_9.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_9.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_9.output_produced[count++] = &codetest_controller_self[0]->_lf_state_display.is_present;
+                }
+            }
+            
+            // ** End initialization for reaction 9 of CodeTest.controller
+            // Total number of outputs (single ports and multiport channels)
+            // produced by reaction_11 of CodeTest.controller.
+            codetest_controller_self[0]->_lf__reaction_10.num_outputs = 4;
+            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+            // struct for this reaction.
+            codetest_controller_self[0]->_lf__reaction_10.triggers = (trigger_t***)lf_allocate(
+                    4, sizeof(trigger_t**),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_10.triggered_sizes = (int*)lf_allocate(
+                    4, sizeof(int),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_10.output_produced = (bool**)lf_allocate(
+                    4, sizeof(bool*),
+                    &codetest_controller_self[0]->base.allocations);
+            {
+                int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                {
+                    codetest_controller_self[0]->_lf__reaction_10.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_10.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_10.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_10.output_produced[count++] = &codetest_controller_self[0]->_lf_state_display.is_present;
+                }
+            }
+            
+            // ** End initialization for reaction 10 of CodeTest.controller
+            // Total number of outputs (single ports and multiport channels)
+            // produced by reaction_12 of CodeTest.controller.
+            codetest_controller_self[0]->_lf__reaction_11.num_outputs = 4;
+            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+            // struct for this reaction.
+            codetest_controller_self[0]->_lf__reaction_11.triggers = (trigger_t***)lf_allocate(
+                    4, sizeof(trigger_t**),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_11.triggered_sizes = (int*)lf_allocate(
+                    4, sizeof(int),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_11.output_produced = (bool**)lf_allocate(
+                    4, sizeof(bool*),
+                    &codetest_controller_self[0]->base.allocations);
+            {
+                int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                {
+                    codetest_controller_self[0]->_lf__reaction_11.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_11.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_11.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_11.output_produced[count++] = &codetest_controller_self[0]->_lf_state_display.is_present;
+                }
+            }
+            
+            // ** End initialization for reaction 11 of CodeTest.controller
+            // Total number of outputs (single ports and multiport channels)
+            // produced by reaction_13 of CodeTest.controller.
+            codetest_controller_self[0]->_lf__reaction_12.num_outputs = 4;
+            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+            // struct for this reaction.
+            codetest_controller_self[0]->_lf__reaction_12.triggers = (trigger_t***)lf_allocate(
+                    4, sizeof(trigger_t**),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_12.triggered_sizes = (int*)lf_allocate(
+                    4, sizeof(int),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_12.output_produced = (bool**)lf_allocate(
+                    4, sizeof(bool*),
+                    &codetest_controller_self[0]->base.allocations);
+            {
+                int count = 0; SUPPRESS_UNUSED_WARNING(count);
+                {
+                    codetest_controller_self[0]->_lf__reaction_12.output_produced[count++] = &codetest_controller_self[0]->_lf_lp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_12.output_produced[count++] = &codetest_controller_self[0]->_lf_rp.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_12.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
+                }
+                {
+                    codetest_controller_self[0]->_lf__reaction_12.output_produced[count++] = &codetest_controller_self[0]->_lf_state_display.is_present;
+                }
+            }
+            
+            // ** End initialization for reaction 12 of CodeTest.controller
+            // Total number of outputs (single ports and multiport channels)
+            // produced by reaction_14 of CodeTest.controller.
+            codetest_controller_self[0]->_lf__reaction_13.num_outputs = 1;
+            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
+            // struct for this reaction.
+            codetest_controller_self[0]->_lf__reaction_13.triggers = (trigger_t***)lf_allocate(
+                    1, sizeof(trigger_t**),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_13.triggered_sizes = (int*)lf_allocate(
+                    1, sizeof(int),
+                    &codetest_controller_self[0]->base.allocations);
+            codetest_controller_self[0]->_lf__reaction_13.output_produced = (bool**)lf_allocate(
                     1, sizeof(bool*),
                     &codetest_controller_self[0]->base.allocations);
             {
                 int count = 0; SUPPRESS_UNUSED_WARNING(count);
                 {
-                    codetest_controller_self[0]->_lf__reaction_8.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
+                    codetest_controller_self[0]->_lf__reaction_13.output_produced[count++] = &codetest_controller_self[0]->_lf_notify.is_present;
                 }
             }
             
-            // ** End initialization for reaction 8 of CodeTest.controller
+            // ** End initialization for reaction 13 of CodeTest.controller
         
         }
         // **** End of deferred initialize for CodeTest.controller
-        // **** Start deferred initialize for CodeTest.line_follower
-        {
-            codetest_line_follower_self[0]->base.name = "line_follower";
-            codetest_line_follower_self[0]->base.parent = (self_base_t*)codetest_main_self[0];
-        
-            // Total number of outputs (single ports and multiport channels)
-            // produced by reaction_1 of CodeTest.line_follower.
-            codetest_line_follower_self[0]->_lf__reaction_0.num_outputs = 0;
-            {
-                int count = 0; SUPPRESS_UNUSED_WARNING(count);
-            }
-            
-            // ** End initialization for reaction 0 of CodeTest.line_follower
-            // Total number of outputs (single ports and multiport channels)
-            // produced by reaction_2 of CodeTest.line_follower.
-            codetest_line_follower_self[0]->_lf__reaction_1.num_outputs = 2;
-            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
-            // struct for this reaction.
-            codetest_line_follower_self[0]->_lf__reaction_1.triggers = (trigger_t***)lf_allocate(
-                    2, sizeof(trigger_t**),
-                    &codetest_line_follower_self[0]->base.allocations);
-            codetest_line_follower_self[0]->_lf__reaction_1.triggered_sizes = (int*)lf_allocate(
-                    2, sizeof(int),
-                    &codetest_line_follower_self[0]->base.allocations);
-            codetest_line_follower_self[0]->_lf__reaction_1.output_produced = (bool**)lf_allocate(
-                    2, sizeof(bool*),
-                    &codetest_line_follower_self[0]->base.allocations);
-            {
-                int count = 0; SUPPRESS_UNUSED_WARNING(count);
-                {
-                    codetest_line_follower_self[0]->_lf__reaction_1.output_produced[count++] = &codetest_line_follower_self[0]->_lf_lp.is_present;
-                }
-                {
-                    codetest_line_follower_self[0]->_lf__reaction_1.output_produced[count++] = &codetest_line_follower_self[0]->_lf_rp.is_present;
-                }
-            }
-            
-            // ** End initialization for reaction 1 of CodeTest.line_follower
-        
-        }
-        // **** End of deferred initialize for CodeTest.line_follower
-        // **** Start deferred initialize for CodeTest.motor_arbiter
-        {
-            codetest_motor_arbiter_self[0]->base.name = "motor_arbiter";
-            codetest_motor_arbiter_self[0]->base.parent = (self_base_t*)codetest_main_self[0];
-        
-            // Total number of outputs (single ports and multiport channels)
-            // produced by reaction_1 of CodeTest.motor_arbiter.
-            codetest_motor_arbiter_self[0]->_lf__reaction_0.num_outputs = 0;
-            {
-                int count = 0; SUPPRESS_UNUSED_WARNING(count);
-            }
-            
-            // ** End initialization for reaction 0 of CodeTest.motor_arbiter
-            // Total number of outputs (single ports and multiport channels)
-            // produced by reaction_2 of CodeTest.motor_arbiter.
-            codetest_motor_arbiter_self[0]->_lf__reaction_1.num_outputs = 2;
-            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
-            // struct for this reaction.
-            codetest_motor_arbiter_self[0]->_lf__reaction_1.triggers = (trigger_t***)lf_allocate(
-                    2, sizeof(trigger_t**),
-                    &codetest_motor_arbiter_self[0]->base.allocations);
-            codetest_motor_arbiter_self[0]->_lf__reaction_1.triggered_sizes = (int*)lf_allocate(
-                    2, sizeof(int),
-                    &codetest_motor_arbiter_self[0]->base.allocations);
-            codetest_motor_arbiter_self[0]->_lf__reaction_1.output_produced = (bool**)lf_allocate(
-                    2, sizeof(bool*),
-                    &codetest_motor_arbiter_self[0]->base.allocations);
-            {
-                int count = 0; SUPPRESS_UNUSED_WARNING(count);
-                {
-                    codetest_motor_arbiter_self[0]->_lf__reaction_1.output_produced[count++] = &codetest_motor_arbiter_self[0]->_lf_lp.is_present;
-                }
-                {
-                    codetest_motor_arbiter_self[0]->_lf__reaction_1.output_produced[count++] = &codetest_motor_arbiter_self[0]->_lf_rp.is_present;
-                }
-            }
-            
-            // ** End initialization for reaction 1 of CodeTest.motor_arbiter
-            // Total number of outputs (single ports and multiport channels)
-            // produced by reaction_3 of CodeTest.motor_arbiter.
-            codetest_motor_arbiter_self[0]->_lf__reaction_2.num_outputs = 2;
-            // Allocate memory for triggers[] and triggered_sizes[] on the reaction_t
-            // struct for this reaction.
-            codetest_motor_arbiter_self[0]->_lf__reaction_2.triggers = (trigger_t***)lf_allocate(
-                    2, sizeof(trigger_t**),
-                    &codetest_motor_arbiter_self[0]->base.allocations);
-            codetest_motor_arbiter_self[0]->_lf__reaction_2.triggered_sizes = (int*)lf_allocate(
-                    2, sizeof(int),
-                    &codetest_motor_arbiter_self[0]->base.allocations);
-            codetest_motor_arbiter_self[0]->_lf__reaction_2.output_produced = (bool**)lf_allocate(
-                    2, sizeof(bool*),
-                    &codetest_motor_arbiter_self[0]->base.allocations);
-            {
-                int count = 0; SUPPRESS_UNUSED_WARNING(count);
-                {
-                    codetest_motor_arbiter_self[0]->_lf__reaction_2.output_produced[count++] = &codetest_motor_arbiter_self[0]->_lf_lp.is_present;
-                }
-                {
-                    codetest_motor_arbiter_self[0]->_lf__reaction_2.output_produced[count++] = &codetest_motor_arbiter_self[0]->_lf_rp.is_present;
-                }
-            }
-            
-            // ** End initialization for reaction 2 of CodeTest.motor_arbiter
-        
-        }
-        // **** End of deferred initialize for CodeTest.motor_arbiter
         // **** Start deferred initialize for CodeTest.disp
         {
             codetest_disp_self[0]->base.name = "disp";
@@ -1399,18 +1356,8 @@ void _lf_initialize_trigger_objects() {
                 codetest_controller_self[src_runtime]->_lf_calibrate._base.num_destinations = 1;
                 codetest_controller_self[src_runtime]->_lf_calibrate._base.source_reactor = (self_base_t*)codetest_controller_self[src_runtime];
             }
-            // For reference counting, set num_destinations for port CodeTest.controller.line_enable.
-            // Iterate over range CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)].
-            {
-                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                codetest_controller_self[src_runtime]->_lf_line_enable._base.num_destinations = 2;
-                codetest_controller_self[src_runtime]->_lf_line_enable._base.source_reactor = (self_base_t*)codetest_controller_self[src_runtime];
-            }
             // For reference counting, set num_destinations for port CodeTest.controller.lp.
-            // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)].
+            // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
             {
                 int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                 int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -1420,7 +1367,7 @@ void _lf_initialize_trigger_objects() {
                 codetest_controller_self[src_runtime]->_lf_lp._base.source_reactor = (self_base_t*)codetest_controller_self[src_runtime];
             }
             // For reference counting, set num_destinations for port CodeTest.controller.rp.
-            // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)].
+            // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
             {
                 int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                 int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -1467,23 +1414,7 @@ void _lf_initialize_trigger_objects() {
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
-                // Iterate over range CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 0 of CodeTest.controller triggers 2 downstream reactions
-                    // through port CodeTest.controller.line_enable.
-                    codetest_controller_self[src_runtime]->_lf__reaction_0.triggered_sizes[triggers_index[src_runtime]] = 2;
-                    // For reaction 0 of CodeTest.controller, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.controller.line_enable
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            2, sizeof(trigger_t*),
-                            &codetest_controller_self[src_runtime]->base.allocations); 
-                    codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)].
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -1499,7 +1430,7 @@ void _lf_initialize_trigger_objects() {
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
-                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)].
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -1567,7 +1498,7 @@ void _lf_initialize_trigger_objects() {
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 1;
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.line_follower.enable(0,1).
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -1575,36 +1506,18 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.line_follower.enable(0,1).
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.line_follower.enable's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_line_follower_self[dst_runtime]->_lf__enable;
-                    }
-                }
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.motor_arbiter.use_line_follower(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.use_line_follower(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.use_line_follower's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime] + src_channel][1] = &codetest_motor_arbiter_self[dst_runtime]->_lf__use_line_follower;
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 2;
-                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)] and CodeTest.motor_arbiter.controller_lp(0,1).
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -1612,36 +1525,17 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.controller_lp(0,1).
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.controller_lp's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__controller_lp;
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 3;
-                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)] and CodeTest.motor_arbiter.controller_rp(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.controller_rp(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.controller_rp's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__controller_rp;
-                    }
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 4;
                 // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -1660,7 +1554,7 @@ void _lf_initialize_trigger_objects() {
                         codetest_controller_self[src_runtime]->_lf__reaction_0.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
                     }
                 }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 5;
+                for (int i = 0; i < 1; i++) triggers_index[i] = 4;
                 // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -1790,19 +1684,35 @@ void _lf_initialize_trigger_objects() {
             }
             {
                 int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)].
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                     int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 2 of CodeTest.controller triggers 2 downstream reactions
-                    // through port CodeTest.controller.line_enable.
-                    codetest_controller_self[src_runtime]->_lf__reaction_2.triggered_sizes[triggers_index[src_runtime]] = 2;
+                    // Reaction 2 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.lp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_2.triggered_sizes[triggers_index[src_runtime]] = 1;
                     // For reaction 2 of CodeTest.controller, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.controller.line_enable
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.lp
                     trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            2, sizeof(trigger_t*),
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 2 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.rp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_2.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 2 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
@@ -1839,7 +1749,7 @@ void _lf_initialize_trigger_objects() {
                     codetest_controller_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.line_follower.enable(0,1).
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -1847,35 +1757,36 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.line_follower.enable(0,1).
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.line_follower.enable's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_line_follower_self[dst_runtime]->_lf__enable;
-                    }
-                }
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.motor_arbiter.use_line_follower(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.use_line_follower(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.use_line_follower's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][1] = &codetest_motor_arbiter_self[dst_runtime]->_lf__use_line_follower;
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
                 // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -1894,7 +1805,7 @@ void _lf_initialize_trigger_objects() {
                         codetest_controller_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
                     }
                 }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -1916,19 +1827,35 @@ void _lf_initialize_trigger_objects() {
             }
             {
                 int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)].
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                     int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 3 of CodeTest.controller triggers 2 downstream reactions
-                    // through port CodeTest.controller.line_enable.
-                    codetest_controller_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 2;
+                    // Reaction 3 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.lp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
                     // For reaction 3 of CodeTest.controller, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.controller.line_enable
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.lp
                     trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            2, sizeof(trigger_t*),
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 3 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.rp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_3.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 3 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
@@ -1965,7 +1892,7 @@ void _lf_initialize_trigger_objects() {
                     codetest_controller_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.line_follower.enable(0,1).
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -1973,35 +1900,36 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.line_follower.enable(0,1).
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.line_follower.enable's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_line_follower_self[dst_runtime]->_lf__enable;
-                    }
-                }
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.motor_arbiter.use_line_follower(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.use_line_follower(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.use_line_follower's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][1] = &codetest_motor_arbiter_self[dst_runtime]->_lf__use_line_follower;
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
                 // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2020,7 +1948,7 @@ void _lf_initialize_trigger_objects() {
                         codetest_controller_self[src_runtime]->_lf__reaction_3.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
                     }
                 }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2042,7 +1970,7 @@ void _lf_initialize_trigger_objects() {
             }
             {
                 int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)].
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -2058,7 +1986,7 @@ void _lf_initialize_trigger_objects() {
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
-                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)].
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -2071,22 +1999,6 @@ void _lf_initialize_trigger_objects() {
                     // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
                     trigger_t** trigger_array = (trigger_t**)lf_allocate(
                             1, sizeof(trigger_t*),
-                            &codetest_controller_self[src_runtime]->base.allocations); 
-                    codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                // Iterate over range CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 4 of CodeTest.controller triggers 2 downstream reactions
-                    // through port CodeTest.controller.line_enable.
-                    codetest_controller_self[src_runtime]->_lf__reaction_4.triggered_sizes[triggers_index[src_runtime]] = 2;
-                    // For reaction 4 of CodeTest.controller, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.controller.line_enable
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            2, sizeof(trigger_t*),
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
@@ -2123,7 +2035,7 @@ void _lf_initialize_trigger_objects() {
                     codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)] and CodeTest.motor_arbiter.controller_lp(0,1).
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -2131,18 +2043,18 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.controller_lp(0,1).
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.controller_lp's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__controller_lp;
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 1;
-                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)] and CodeTest.motor_arbiter.controller_rp(0,1).
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -2150,54 +2062,17 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.controller_rp(0,1).
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.controller_rp's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__controller_rp;
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 2;
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.line_follower.enable(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.line_follower.enable(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.line_follower.enable's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_line_follower_self[dst_runtime]->_lf__enable;
-                    }
-                }
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.motor_arbiter.use_line_follower(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.use_line_follower(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.use_line_follower's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][1] = &codetest_motor_arbiter_self[dst_runtime]->_lf__use_line_follower;
-                    }
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2216,7 +2091,7 @@ void _lf_initialize_trigger_objects() {
                         codetest_controller_self[src_runtime]->_lf__reaction_4.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
                     }
                 }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 4;
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2238,19 +2113,35 @@ void _lf_initialize_trigger_objects() {
             }
             {
                 int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)].
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                     int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 5 of CodeTest.controller triggers 2 downstream reactions
-                    // through port CodeTest.controller.line_enable.
-                    codetest_controller_self[src_runtime]->_lf__reaction_5.triggered_sizes[triggers_index[src_runtime]] = 2;
+                    // Reaction 5 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.lp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_5.triggered_sizes[triggers_index[src_runtime]] = 1;
                     // For reaction 5 of CodeTest.controller, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.controller.line_enable
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.lp
                     trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            2, sizeof(trigger_t*),
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_5.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 5 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.rp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_5.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 5 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_5.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
@@ -2287,7 +2178,7 @@ void _lf_initialize_trigger_objects() {
                     codetest_controller_self[src_runtime]->_lf__reaction_5.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.line_follower.enable(0,1).
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -2295,35 +2186,36 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.line_follower.enable(0,1).
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.line_follower.enable's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_5.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_line_follower_self[dst_runtime]->_lf__enable;
-                    }
-                }
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.motor_arbiter.use_line_follower(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.use_line_follower(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.use_line_follower's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_5.triggers[triggers_index[src_runtime] + src_channel][1] = &codetest_motor_arbiter_self[dst_runtime]->_lf__use_line_follower;
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_5.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_5.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
                 // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2342,7 +2234,7 @@ void _lf_initialize_trigger_objects() {
                         codetest_controller_self[src_runtime]->_lf__reaction_5.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
                     }
                 }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2364,7 +2256,7 @@ void _lf_initialize_trigger_objects() {
             }
             {
                 int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)].
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -2380,7 +2272,7 @@ void _lf_initialize_trigger_objects() {
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
-                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)].
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -2393,22 +2285,6 @@ void _lf_initialize_trigger_objects() {
                     // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
                     trigger_t** trigger_array = (trigger_t**)lf_allocate(
                             1, sizeof(trigger_t*),
-                            &codetest_controller_self[src_runtime]->base.allocations); 
-                    codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                // Iterate over range CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 6 of CodeTest.controller triggers 2 downstream reactions
-                    // through port CodeTest.controller.line_enable.
-                    codetest_controller_self[src_runtime]->_lf__reaction_6.triggered_sizes[triggers_index[src_runtime]] = 2;
-                    // For reaction 6 of CodeTest.controller, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.controller.line_enable
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            2, sizeof(trigger_t*),
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
@@ -2445,7 +2321,7 @@ void _lf_initialize_trigger_objects() {
                     codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)] and CodeTest.motor_arbiter.controller_lp(0,1).
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -2453,18 +2329,18 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.controller_lp(0,1).
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.controller_lp's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__controller_lp;
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 1;
-                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)] and CodeTest.motor_arbiter.controller_rp(0,1).
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -2472,54 +2348,17 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.controller_rp(0,1).
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.controller_rp's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__controller_rp;
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 2;
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.line_follower.enable(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.line_follower.enable(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.line_follower.enable's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_line_follower_self[dst_runtime]->_lf__enable;
-                    }
-                }
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.motor_arbiter.use_line_follower(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.use_line_follower(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.use_line_follower's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime] + src_channel][1] = &codetest_motor_arbiter_self[dst_runtime]->_lf__use_line_follower;
-                    }
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2538,7 +2377,7 @@ void _lf_initialize_trigger_objects() {
                         codetest_controller_self[src_runtime]->_lf__reaction_6.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
                     }
                 }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 4;
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2560,23 +2399,7 @@ void _lf_initialize_trigger_objects() {
             }
             {
                 int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 7 of CodeTest.controller triggers 2 downstream reactions
-                    // through port CodeTest.controller.line_enable.
-                    codetest_controller_self[src_runtime]->_lf__reaction_7.triggered_sizes[triggers_index[src_runtime]] = 2;
-                    // For reaction 7 of CodeTest.controller, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.controller.line_enable
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            2, sizeof(trigger_t*),
-                            &codetest_controller_self[src_runtime]->base.allocations); 
-                    codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)].
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -2592,7 +2415,7 @@ void _lf_initialize_trigger_objects() {
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
-                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)].
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
@@ -2641,7 +2464,7 @@ void _lf_initialize_trigger_objects() {
                     codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.line_follower.enable(0,1).
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -2649,36 +2472,18 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.line_follower.enable(0,1).
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.line_follower.enable's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_line_follower_self[dst_runtime]->_lf__enable;
-                    }
-                }
-                // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.motor_arbiter.use_line_follower(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.use_line_follower(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.use_line_follower's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime] + src_channel][1] = &codetest_motor_arbiter_self[dst_runtime]->_lf__use_line_follower;
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 1;
-                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)] and CodeTest.motor_arbiter.controller_lp(0,1).
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -2686,36 +2491,17 @@ void _lf_initialize_trigger_objects() {
                     SUPPRESS_UNUSED_WARNING(src_channel);
                     int src_bank = 0; // Bank index.
                     SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.controller_lp(0,1).
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
                     {
                         int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
                         int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.controller_lp's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__controller_lp;
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
                     }
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 2;
-                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)] and CodeTest.motor_arbiter.controller_rp(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.controller_rp(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.controller_rp's trigger struct.
-                        codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__controller_rp;
-                    }
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2734,7 +2520,7 @@ void _lf_initialize_trigger_objects() {
                         codetest_controller_self[src_runtime]->_lf__reaction_7.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
                     }
                 }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 4;
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
                 // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2756,6 +2542,38 @@ void _lf_initialize_trigger_objects() {
             }
             {
                 int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 8 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.lp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_8.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 8 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.lp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_8.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 8 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.rp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_8.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 8 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_8.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
                 // Iterate over range CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
@@ -2772,7 +2590,61 @@ void _lf_initialize_trigger_objects() {
                             &codetest_controller_self[src_runtime]->base.allocations); 
                     codetest_controller_self[src_runtime]->_lf__reaction_8.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
+                // Iterate over range CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 8 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.state_display.
+                    codetest_controller_self[src_runtime]->_lf__reaction_8.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 8 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.state_display
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_8.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_8.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_8.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
                 // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
@@ -2791,281 +2663,639 @@ void _lf_initialize_trigger_objects() {
                         codetest_controller_self[src_runtime]->_lf__reaction_8.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
                     }
                 }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
+                // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line1(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line1's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_8.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line1;
+                    }
+                }
+            }
+            {
+                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 9 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.lp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_9.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 9 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.lp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_9.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 9 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.rp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_9.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 9 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_9.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 9 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.notify.
+                    codetest_controller_self[src_runtime]->_lf__reaction_9.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 9 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.notify
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_9.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 9 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.state_display.
+                    codetest_controller_self[src_runtime]->_lf__reaction_9.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 9 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.state_display
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_9.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_9.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_9.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+                // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line0(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line0's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_9.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
+                // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line1(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line1's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_9.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line1;
+                    }
+                }
+            }
+            {
+                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 10 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.lp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_10.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 10 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.lp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_10.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 10 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.rp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_10.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 10 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_10.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 10 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.notify.
+                    codetest_controller_self[src_runtime]->_lf__reaction_10.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 10 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.notify
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_10.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 10 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.state_display.
+                    codetest_controller_self[src_runtime]->_lf__reaction_10.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 10 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.state_display
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_10.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_10.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_10.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+                // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line0(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line0's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_10.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
+                // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line1(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line1's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_10.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line1;
+                    }
+                }
+            }
+            {
+                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 11 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.lp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_11.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 11 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.lp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_11.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 11 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.rp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_11.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 11 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_11.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 11 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.notify.
+                    codetest_controller_self[src_runtime]->_lf__reaction_11.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 11 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.notify
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_11.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 11 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.state_display.
+                    codetest_controller_self[src_runtime]->_lf__reaction_11.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 11 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.state_display
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_11.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_11.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_11.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+                // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line0(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line0's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_11.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
+                // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line1(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line1's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_11.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line1;
+                    }
+                }
+            }
+            {
+                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                // Iterate over range CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 12 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.lp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_12.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 12 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.lp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_12.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 12 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.rp.
+                    codetest_controller_self[src_runtime]->_lf__reaction_12.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 12 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.rp
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_12.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 12 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.notify.
+                    codetest_controller_self[src_runtime]->_lf__reaction_12.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 12 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.notify
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_12.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                // Iterate over range CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 12 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.state_display.
+                    codetest_controller_self[src_runtime]->_lf__reaction_12.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 12 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.state_display
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_12.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+                // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.left_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_12.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 1;
+                // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.motors.right_speed(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_12.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 2;
+                // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line0(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line0's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_12.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
+                    }
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 3;
+                // Iterate over ranges CodeTest.controller.state_display(0,1)->[CodeTest.disp.line1(0,1)] and CodeTest.disp.line1(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line1(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line1's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_12.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line1;
+                    }
+                }
+            }
+            {
+                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
+                // Iterate over range CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)].
+                {
+                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
+                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
+                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
+                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                    // Reaction 13 of CodeTest.controller triggers 1 downstream reactions
+                    // through port CodeTest.controller.notify.
+                    codetest_controller_self[src_runtime]->_lf__reaction_13.triggered_sizes[triggers_index[src_runtime]] = 1;
+                    // For reaction 13 of CodeTest.controller, allocate an
+                    // array of trigger pointers for downstream reactions through port CodeTest.controller.notify
+                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
+                            1, sizeof(trigger_t*),
+                            &codetest_controller_self[src_runtime]->base.allocations); 
+                    codetest_controller_self[src_runtime]->_lf__reaction_13.triggers[triggers_index[src_runtime]++] = trigger_array;
+                }
+                for (int i = 0; i < 1; i++) triggers_index[i] = 0;
+                // Iterate over ranges CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] and CodeTest.disp.line0(0,1).
+                {
+                    int src_runtime = 0; // Runtime index.
+                    SUPPRESS_UNUSED_WARNING(src_runtime);
+                    int src_channel = 0; // Channel index.
+                    SUPPRESS_UNUSED_WARNING(src_channel);
+                    int src_bank = 0; // Bank index.
+                    SUPPRESS_UNUSED_WARNING(src_bank);
+                    // Iterate over range CodeTest.disp.line0(0,1).
+                    {
+                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
+                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
+                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
+                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
+                        // Point to destination port CodeTest.disp.line0's trigger struct.
+                        codetest_controller_self[src_runtime]->_lf__reaction_13.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_disp_self[dst_runtime]->_lf__line0;
+                    }
+                }
             }
         
         }
         // **** End of non-nested deferred initialize for CodeTest.controller
-        // **** Start non-nested deferred initialize for CodeTest.line_follower
-        {
-        
-            // For reference counting, set num_destinations for port CodeTest.line_follower.lp.
-            // Iterate over range CodeTest.line_follower.lp(0,1)->[CodeTest.motor_arbiter.line_follower_lp(0,1)].
-            {
-                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                codetest_line_follower_self[src_runtime]->_lf_lp._base.num_destinations = 1;
-                codetest_line_follower_self[src_runtime]->_lf_lp._base.source_reactor = (self_base_t*)codetest_line_follower_self[src_runtime];
-            }
-            // For reference counting, set num_destinations for port CodeTest.line_follower.rp.
-            // Iterate over range CodeTest.line_follower.rp(0,1)->[CodeTest.motor_arbiter.line_follower_rp(0,1)].
-            {
-                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                codetest_line_follower_self[src_runtime]->_lf_rp._base.num_destinations = 1;
-                codetest_line_follower_self[src_runtime]->_lf_rp._base.source_reactor = (self_base_t*)codetest_line_follower_self[src_runtime];
-            }
-            {
-                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.line_follower.lp(0,1)->[CodeTest.motor_arbiter.line_follower_lp(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 1 of CodeTest.line_follower triggers 1 downstream reactions
-                    // through port CodeTest.line_follower.lp.
-                    codetest_line_follower_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
-                    // For reaction 1 of CodeTest.line_follower, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.line_follower.lp
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            1, sizeof(trigger_t*),
-                            &codetest_line_follower_self[src_runtime]->base.allocations); 
-                    codetest_line_follower_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                // Iterate over range CodeTest.line_follower.rp(0,1)->[CodeTest.motor_arbiter.line_follower_rp(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 1 of CodeTest.line_follower triggers 1 downstream reactions
-                    // through port CodeTest.line_follower.rp.
-                    codetest_line_follower_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
-                    // For reaction 1 of CodeTest.line_follower, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.line_follower.rp
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            1, sizeof(trigger_t*),
-                            &codetest_line_follower_self[src_runtime]->base.allocations); 
-                    codetest_line_follower_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.line_follower.lp(0,1)->[CodeTest.motor_arbiter.line_follower_lp(0,1)] and CodeTest.motor_arbiter.line_follower_lp(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.line_follower_lp(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.line_follower_lp's trigger struct.
-                        codetest_line_follower_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__line_follower_lp;
-                    }
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 1;
-                // Iterate over ranges CodeTest.line_follower.rp(0,1)->[CodeTest.motor_arbiter.line_follower_rp(0,1)] and CodeTest.motor_arbiter.line_follower_rp(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motor_arbiter.line_follower_rp(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motor_arbiter.line_follower_rp's trigger struct.
-                        codetest_line_follower_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motor_arbiter_self[dst_runtime]->_lf__line_follower_rp;
-                    }
-                }
-            }
-        
-        }
-        // **** End of non-nested deferred initialize for CodeTest.line_follower
-        // **** Start non-nested deferred initialize for CodeTest.motor_arbiter
-        {
-        
-            // For reference counting, set num_destinations for port CodeTest.motor_arbiter.lp.
-            // Iterate over range CodeTest.motor_arbiter.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
-            {
-                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                codetest_motor_arbiter_self[src_runtime]->_lf_lp._base.num_destinations = 1;
-                codetest_motor_arbiter_self[src_runtime]->_lf_lp._base.source_reactor = (self_base_t*)codetest_motor_arbiter_self[src_runtime];
-            }
-            // For reference counting, set num_destinations for port CodeTest.motor_arbiter.rp.
-            // Iterate over range CodeTest.motor_arbiter.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
-            {
-                int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                codetest_motor_arbiter_self[src_runtime]->_lf_rp._base.num_destinations = 1;
-                codetest_motor_arbiter_self[src_runtime]->_lf_rp._base.source_reactor = (self_base_t*)codetest_motor_arbiter_self[src_runtime];
-            }
-            {
-                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.motor_arbiter.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 1 of CodeTest.motor_arbiter triggers 1 downstream reactions
-                    // through port CodeTest.motor_arbiter.lp.
-                    codetest_motor_arbiter_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
-                    // For reaction 1 of CodeTest.motor_arbiter, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.motor_arbiter.lp
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            1, sizeof(trigger_t*),
-                            &codetest_motor_arbiter_self[src_runtime]->base.allocations); 
-                    codetest_motor_arbiter_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                // Iterate over range CodeTest.motor_arbiter.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 1 of CodeTest.motor_arbiter triggers 1 downstream reactions
-                    // through port CodeTest.motor_arbiter.rp.
-                    codetest_motor_arbiter_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
-                    // For reaction 1 of CodeTest.motor_arbiter, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.motor_arbiter.rp
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            1, sizeof(trigger_t*),
-                            &codetest_motor_arbiter_self[src_runtime]->base.allocations); 
-                    codetest_motor_arbiter_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.motor_arbiter.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motors.left_speed(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
-                        codetest_motor_arbiter_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
-                    }
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 1;
-                // Iterate over ranges CodeTest.motor_arbiter.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motors.right_speed(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
-                        codetest_motor_arbiter_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
-                    }
-                }
-            }
-            {
-                int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.motor_arbiter.lp(0,1)->[CodeTest.motors.left_speed(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 2 of CodeTest.motor_arbiter triggers 1 downstream reactions
-                    // through port CodeTest.motor_arbiter.lp.
-                    codetest_motor_arbiter_self[src_runtime]->_lf__reaction_2.triggered_sizes[triggers_index[src_runtime]] = 1;
-                    // For reaction 2 of CodeTest.motor_arbiter, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.motor_arbiter.lp
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            1, sizeof(trigger_t*),
-                            &codetest_motor_arbiter_self[src_runtime]->base.allocations); 
-                    codetest_motor_arbiter_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                // Iterate over range CodeTest.motor_arbiter.rp(0,1)->[CodeTest.motors.right_speed(0,1)].
-                {
-                    int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
-                    int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
-                    int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
-                    int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 2 of CodeTest.motor_arbiter triggers 1 downstream reactions
-                    // through port CodeTest.motor_arbiter.rp.
-                    codetest_motor_arbiter_self[src_runtime]->_lf__reaction_2.triggered_sizes[triggers_index[src_runtime]] = 1;
-                    // For reaction 2 of CodeTest.motor_arbiter, allocate an
-                    // array of trigger pointers for downstream reactions through port CodeTest.motor_arbiter.rp
-                    trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            1, sizeof(trigger_t*),
-                            &codetest_motor_arbiter_self[src_runtime]->base.allocations); 
-                    codetest_motor_arbiter_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime]++] = trigger_array;
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.motor_arbiter.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motors.left_speed(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motors.left_speed's trigger struct.
-                        codetest_motor_arbiter_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__left_speed;
-                    }
-                }
-                for (int i = 0; i < 1; i++) triggers_index[i] = 1;
-                // Iterate over ranges CodeTest.motor_arbiter.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.motors.right_speed(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.motors.right_speed's trigger struct.
-                        codetest_motor_arbiter_self[src_runtime]->_lf__reaction_2.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_motors_self[dst_runtime]->_lf__right_speed;
-                    }
-                }
-            }
-        
-        }
-        // **** End of non-nested deferred initialize for CodeTest.motor_arbiter
         // **** Start non-nested deferred initialize for CodeTest.disp
         {
         
@@ -3392,53 +3622,35 @@ void _lf_initialize_trigger_objects() {
         {
         
             // For reference counting, set num_destinations for port CodeTest.line.reflect.
-            // Iterate over range CodeTest.line.reflect(0,1)->[CodeTest.line_follower.reflect(0,1), CodeTest.controller.reflect(0,1)].
+            // Iterate over range CodeTest.line.reflect(0,1)->[CodeTest.controller.reflect(0,1)].
             {
                 int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                 int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                 int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                 int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                codetest_line_self[src_runtime]->_lf_reflect._base.num_destinations = 2;
+                codetest_line_self[src_runtime]->_lf_reflect._base.num_destinations = 1;
                 codetest_line_self[src_runtime]->_lf_reflect._base.source_reactor = (self_base_t*)codetest_line_self[src_runtime];
             }
             {
                 int triggers_index[1] = { 0 }; // Number of bank members with the reaction.
-                // Iterate over range CodeTest.line.reflect(0,1)->[CodeTest.line_follower.reflect(0,1), CodeTest.controller.reflect(0,1)].
+                // Iterate over range CodeTest.line.reflect(0,1)->[CodeTest.controller.reflect(0,1)].
                 {
                     int src_runtime = 0; SUPPRESS_UNUSED_WARNING(src_runtime); // Runtime index.
                     int src_channel = 0; SUPPRESS_UNUSED_WARNING(src_channel); // Channel index.
                     int src_bank = 0; SUPPRESS_UNUSED_WARNING(src_bank); // Bank index.
                     int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                    // Reaction 1 of CodeTest.line triggers 2 downstream reactions
+                    // Reaction 1 of CodeTest.line triggers 1 downstream reactions
                     // through port CodeTest.line.reflect.
-                    codetest_line_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 2;
+                    codetest_line_self[src_runtime]->_lf__reaction_1.triggered_sizes[triggers_index[src_runtime]] = 1;
                     // For reaction 1 of CodeTest.line, allocate an
                     // array of trigger pointers for downstream reactions through port CodeTest.line.reflect
                     trigger_t** trigger_array = (trigger_t**)lf_allocate(
-                            2, sizeof(trigger_t*),
+                            1, sizeof(trigger_t*),
                             &codetest_line_self[src_runtime]->base.allocations); 
                     codetest_line_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime]++] = trigger_array;
                 }
                 for (int i = 0; i < 1; i++) triggers_index[i] = 0;
-                // Iterate over ranges CodeTest.line.reflect(0,1)->[CodeTest.line_follower.reflect(0,1), CodeTest.controller.reflect(0,1)] and CodeTest.line_follower.reflect(0,1).
-                {
-                    int src_runtime = 0; // Runtime index.
-                    SUPPRESS_UNUSED_WARNING(src_runtime);
-                    int src_channel = 0; // Channel index.
-                    SUPPRESS_UNUSED_WARNING(src_channel);
-                    int src_bank = 0; // Bank index.
-                    SUPPRESS_UNUSED_WARNING(src_bank);
-                    // Iterate over range CodeTest.line_follower.reflect(0,1).
-                    {
-                        int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-                        int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-                        int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-                        int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-                        // Point to destination port CodeTest.line_follower.reflect's trigger struct.
-                        codetest_line_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_line_follower_self[dst_runtime]->_lf__reflect;
-                    }
-                }
-                // Iterate over ranges CodeTest.line.reflect(0,1)->[CodeTest.line_follower.reflect(0,1), CodeTest.controller.reflect(0,1)] and CodeTest.controller.reflect(0,1).
+                // Iterate over ranges CodeTest.line.reflect(0,1)->[CodeTest.controller.reflect(0,1)] and CodeTest.controller.reflect(0,1).
                 {
                     int src_runtime = 0; // Runtime index.
                     SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -3453,7 +3665,7 @@ void _lf_initialize_trigger_objects() {
                         int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
                         int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
                         // Point to destination port CodeTest.controller.reflect's trigger struct.
-                        codetest_line_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][1] = &codetest_controller_self[dst_runtime]->_lf__reflect;
+                        codetest_line_self[src_runtime]->_lf__reaction_1.triggers[triggers_index[src_runtime] + src_channel][0] = &codetest_controller_self[dst_runtime]->_lf__reflect;
                     }
                 }
             }
@@ -3500,8 +3712,8 @@ void _lf_initialize_trigger_objects() {
             codetest_line_self[dst_runtime]->_lf_calibrate = (_line_calibrate_t*)&codetest_controller_self[src_runtime]->_lf_calibrate;
         }
     }
-    // Connect CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] to port CodeTest.line_follower.enable(0,1)
-    // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.line_follower.enable(0,1).
+    // Connect CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] to port CodeTest.motors.left_speed(0,1)
+    // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
     {
         int src_runtime = 0; // Runtime index.
         SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -3509,17 +3721,17 @@ void _lf_initialize_trigger_objects() {
         SUPPRESS_UNUSED_WARNING(src_channel);
         int src_bank = 0; // Bank index.
         SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.line_follower.enable(0,1).
+        // Iterate over range CodeTest.motors.left_speed(0,1).
         {
             int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
             int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
             int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
             int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_line_follower_self[dst_runtime]->_lf_enable = (_linefollower_enable_t*)&codetest_controller_self[src_runtime]->_lf_line_enable;
+            codetest_motors_self[dst_runtime]->_lf_left_speed = (_motorswithfeedback_left_speed_t*)&codetest_controller_self[src_runtime]->_lf_lp;
         }
     }
-    // Connect CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] to port CodeTest.motor_arbiter.use_line_follower(0,1)
-    // Iterate over ranges CodeTest.controller.line_enable(0,1)->[CodeTest.line_follower.enable(0,1), CodeTest.motor_arbiter.use_line_follower(0,1)] and CodeTest.motor_arbiter.use_line_follower(0,1).
+    // Connect CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] to port CodeTest.motors.right_speed(0,1)
+    // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
     {
         int src_runtime = 0; // Runtime index.
         SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -3527,49 +3739,13 @@ void _lf_initialize_trigger_objects() {
         SUPPRESS_UNUSED_WARNING(src_channel);
         int src_bank = 0; // Bank index.
         SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.motor_arbiter.use_line_follower(0,1).
+        // Iterate over range CodeTest.motors.right_speed(0,1).
         {
             int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
             int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
             int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
             int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_motor_arbiter_self[dst_runtime]->_lf_use_line_follower = (_motorarbiter_use_line_follower_t*)&codetest_controller_self[src_runtime]->_lf_line_enable;
-        }
-    }
-    // Connect CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)] to port CodeTest.motor_arbiter.controller_lp(0,1)
-    // Iterate over ranges CodeTest.controller.lp(0,1)->[CodeTest.motor_arbiter.controller_lp(0,1)] and CodeTest.motor_arbiter.controller_lp(0,1).
-    {
-        int src_runtime = 0; // Runtime index.
-        SUPPRESS_UNUSED_WARNING(src_runtime);
-        int src_channel = 0; // Channel index.
-        SUPPRESS_UNUSED_WARNING(src_channel);
-        int src_bank = 0; // Bank index.
-        SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.motor_arbiter.controller_lp(0,1).
-        {
-            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_motor_arbiter_self[dst_runtime]->_lf_controller_lp = (_motorarbiter_controller_lp_t*)&codetest_controller_self[src_runtime]->_lf_lp;
-        }
-    }
-    // Connect CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)] to port CodeTest.motor_arbiter.controller_rp(0,1)
-    // Iterate over ranges CodeTest.controller.rp(0,1)->[CodeTest.motor_arbiter.controller_rp(0,1)] and CodeTest.motor_arbiter.controller_rp(0,1).
-    {
-        int src_runtime = 0; // Runtime index.
-        SUPPRESS_UNUSED_WARNING(src_runtime);
-        int src_channel = 0; // Channel index.
-        SUPPRESS_UNUSED_WARNING(src_channel);
-        int src_bank = 0; // Bank index.
-        SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.motor_arbiter.controller_rp(0,1).
-        {
-            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_motor_arbiter_self[dst_runtime]->_lf_controller_rp = (_motorarbiter_controller_rp_t*)&codetest_controller_self[src_runtime]->_lf_rp;
+            codetest_motors_self[dst_runtime]->_lf_right_speed = (_motorswithfeedback_right_speed_t*)&codetest_controller_self[src_runtime]->_lf_rp;
         }
     }
     // Connect CodeTest.controller.notify(0,1)->[CodeTest.disp.line0(0,1)] to port CodeTest.disp.line0(0,1)
@@ -3606,80 +3782,6 @@ void _lf_initialize_trigger_objects() {
             int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
             int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
             codetest_disp_self[dst_runtime]->_lf_line1 = (_display_line1_t*)&codetest_controller_self[src_runtime]->_lf_state_display;
-        }
-    }
-    // Connect inputs and outputs for reactor CodeTest.line_follower.
-    // Connect CodeTest.line_follower.lp(0,1)->[CodeTest.motor_arbiter.line_follower_lp(0,1)] to port CodeTest.motor_arbiter.line_follower_lp(0,1)
-    // Iterate over ranges CodeTest.line_follower.lp(0,1)->[CodeTest.motor_arbiter.line_follower_lp(0,1)] and CodeTest.motor_arbiter.line_follower_lp(0,1).
-    {
-        int src_runtime = 0; // Runtime index.
-        SUPPRESS_UNUSED_WARNING(src_runtime);
-        int src_channel = 0; // Channel index.
-        SUPPRESS_UNUSED_WARNING(src_channel);
-        int src_bank = 0; // Bank index.
-        SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.motor_arbiter.line_follower_lp(0,1).
-        {
-            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_motor_arbiter_self[dst_runtime]->_lf_line_follower_lp = (_motorarbiter_line_follower_lp_t*)&codetest_line_follower_self[src_runtime]->_lf_lp;
-        }
-    }
-    // Connect CodeTest.line_follower.rp(0,1)->[CodeTest.motor_arbiter.line_follower_rp(0,1)] to port CodeTest.motor_arbiter.line_follower_rp(0,1)
-    // Iterate over ranges CodeTest.line_follower.rp(0,1)->[CodeTest.motor_arbiter.line_follower_rp(0,1)] and CodeTest.motor_arbiter.line_follower_rp(0,1).
-    {
-        int src_runtime = 0; // Runtime index.
-        SUPPRESS_UNUSED_WARNING(src_runtime);
-        int src_channel = 0; // Channel index.
-        SUPPRESS_UNUSED_WARNING(src_channel);
-        int src_bank = 0; // Bank index.
-        SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.motor_arbiter.line_follower_rp(0,1).
-        {
-            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_motor_arbiter_self[dst_runtime]->_lf_line_follower_rp = (_motorarbiter_line_follower_rp_t*)&codetest_line_follower_self[src_runtime]->_lf_rp;
-        }
-    }
-    // Connect inputs and outputs for reactor CodeTest.motor_arbiter.
-    // Connect CodeTest.motor_arbiter.lp(0,1)->[CodeTest.motors.left_speed(0,1)] to port CodeTest.motors.left_speed(0,1)
-    // Iterate over ranges CodeTest.motor_arbiter.lp(0,1)->[CodeTest.motors.left_speed(0,1)] and CodeTest.motors.left_speed(0,1).
-    {
-        int src_runtime = 0; // Runtime index.
-        SUPPRESS_UNUSED_WARNING(src_runtime);
-        int src_channel = 0; // Channel index.
-        SUPPRESS_UNUSED_WARNING(src_channel);
-        int src_bank = 0; // Bank index.
-        SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.motors.left_speed(0,1).
-        {
-            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_motors_self[dst_runtime]->_lf_left_speed = (_motorswithfeedback_left_speed_t*)&codetest_motor_arbiter_self[src_runtime]->_lf_lp;
-        }
-    }
-    // Connect CodeTest.motor_arbiter.rp(0,1)->[CodeTest.motors.right_speed(0,1)] to port CodeTest.motors.right_speed(0,1)
-    // Iterate over ranges CodeTest.motor_arbiter.rp(0,1)->[CodeTest.motors.right_speed(0,1)] and CodeTest.motors.right_speed(0,1).
-    {
-        int src_runtime = 0; // Runtime index.
-        SUPPRESS_UNUSED_WARNING(src_runtime);
-        int src_channel = 0; // Channel index.
-        SUPPRESS_UNUSED_WARNING(src_channel);
-        int src_bank = 0; // Bank index.
-        SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.motors.right_speed(0,1).
-        {
-            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_motors_self[dst_runtime]->_lf_right_speed = (_motorswithfeedback_right_speed_t*)&codetest_motor_arbiter_self[src_runtime]->_lf_rp;
         }
     }
     // Connect inputs and outputs for reactor CodeTest.disp.
@@ -3833,26 +3935,8 @@ void _lf_initialize_trigger_objects() {
             codetest_line_self[dst_runtime]->_lf_trigger = (_line_trigger_t*)&codetest_main_self[src_runtime]->_lf_line.trigger;
         }
     }
-    // Connect CodeTest.line.reflect(0,1)->[CodeTest.line_follower.reflect(0,1), CodeTest.controller.reflect(0,1)] to port CodeTest.line_follower.reflect(0,1)
-    // Iterate over ranges CodeTest.line.reflect(0,1)->[CodeTest.line_follower.reflect(0,1), CodeTest.controller.reflect(0,1)] and CodeTest.line_follower.reflect(0,1).
-    {
-        int src_runtime = 0; // Runtime index.
-        SUPPRESS_UNUSED_WARNING(src_runtime);
-        int src_channel = 0; // Channel index.
-        SUPPRESS_UNUSED_WARNING(src_channel);
-        int src_bank = 0; // Bank index.
-        SUPPRESS_UNUSED_WARNING(src_bank);
-        // Iterate over range CodeTest.line_follower.reflect(0,1).
-        {
-            int dst_runtime = 0; SUPPRESS_UNUSED_WARNING(dst_runtime); // Runtime index.
-            int dst_channel = 0; SUPPRESS_UNUSED_WARNING(dst_channel); // Channel index.
-            int dst_bank = 0; SUPPRESS_UNUSED_WARNING(dst_bank); // Bank index.
-            int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
-            codetest_line_follower_self[dst_runtime]->_lf_reflect = (_linefollower_reflect_t*)&codetest_line_self[src_runtime]->_lf_reflect;
-        }
-    }
-    // Connect CodeTest.line.reflect(0,1)->[CodeTest.line_follower.reflect(0,1), CodeTest.controller.reflect(0,1)] to port CodeTest.controller.reflect(0,1)
-    // Iterate over ranges CodeTest.line.reflect(0,1)->[CodeTest.line_follower.reflect(0,1), CodeTest.controller.reflect(0,1)] and CodeTest.controller.reflect(0,1).
+    // Connect CodeTest.line.reflect(0,1)->[CodeTest.controller.reflect(0,1)] to port CodeTest.controller.reflect(0,1)
+    // Iterate over ranges CodeTest.line.reflect(0,1)->[CodeTest.controller.reflect(0,1)] and CodeTest.controller.reflect(0,1).
     {
         int src_runtime = 0; // Runtime index.
         SUPPRESS_UNUSED_WARNING(src_runtime);
@@ -3868,10 +3952,6 @@ void _lf_initialize_trigger_objects() {
             int range_count = 0; SUPPRESS_UNUSED_WARNING(range_count);
             codetest_controller_self[dst_runtime]->_lf_reflect = (_parkingcontroller_reflect_t*)&codetest_line_self[src_runtime]->_lf_reflect;
         }
-    }
-    {
-    }
-    {
     }
     {
     }
@@ -3982,83 +4062,38 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             // Add output port CodeTest.controller.calibrate to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_calibrate.is_present;
+            environments[codetest_main].is_present_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_calibrate.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add output port CodeTest.controller.calibrate to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_calibrate.intended_tag;
-            #endif // FEDERATED_DECENTRALIZED
-            count++;
-            // Add output port CodeTest.controller.line_enable to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_line_enable.is_present;
-            #ifdef FEDERATED_DECENTRALIZED
-            // Add output port CodeTest.controller.line_enable to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_line_enable.intended_tag;
+            environments[codetest_main]._lf_intended_tag_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_calibrate.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
             // Add output port CodeTest.controller.lp to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_lp.is_present;
+            environments[codetest_main].is_present_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_lp.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add output port CodeTest.controller.lp to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_lp.intended_tag;
+            environments[codetest_main]._lf_intended_tag_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_lp.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
             // Add output port CodeTest.controller.rp to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_rp.is_present;
+            environments[codetest_main].is_present_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_rp.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add output port CodeTest.controller.rp to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_rp.intended_tag;
+            environments[codetest_main]._lf_intended_tag_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_rp.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
             // Add output port CodeTest.controller.notify to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_notify.is_present;
+            environments[codetest_main].is_present_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_notify.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add output port CodeTest.controller.notify to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_notify.intended_tag;
+            environments[codetest_main]._lf_intended_tag_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_notify.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
             // Add output port CodeTest.controller.state_display to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_state_display.is_present;
+            environments[codetest_main].is_present_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_state_display.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add output port CodeTest.controller.state_display to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 6 + 7 + count] = &codetest_controller_self[0]->_lf_state_display.intended_tag;
-            #endif // FEDERATED_DECENTRALIZED
-            count++;
-        }
-    }
-    {
-        int count = 0; SUPPRESS_UNUSED_WARNING(count);
-        {
-            // Add output port CodeTest.line_follower.lp to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 2 + 13 + count] = &codetest_line_follower_self[0]->_lf_lp.is_present;
-            #ifdef FEDERATED_DECENTRALIZED
-            // Add output port CodeTest.line_follower.lp to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 2 + 13 + count] = &codetest_line_follower_self[0]->_lf_lp.intended_tag;
-            #endif // FEDERATED_DECENTRALIZED
-            count++;
-            // Add output port CodeTest.line_follower.rp to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 2 + 13 + count] = &codetest_line_follower_self[0]->_lf_rp.is_present;
-            #ifdef FEDERATED_DECENTRALIZED
-            // Add output port CodeTest.line_follower.rp to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 2 + 13 + count] = &codetest_line_follower_self[0]->_lf_rp.intended_tag;
-            #endif // FEDERATED_DECENTRALIZED
-            count++;
-        }
-    }
-    {
-        int count = 0; SUPPRESS_UNUSED_WARNING(count);
-        {
-            // Add output port CodeTest.motor_arbiter.lp to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 2 + 15 + count] = &codetest_motor_arbiter_self[0]->_lf_lp.is_present;
-            #ifdef FEDERATED_DECENTRALIZED
-            // Add output port CodeTest.motor_arbiter.lp to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 2 + 15 + count] = &codetest_motor_arbiter_self[0]->_lf_lp.intended_tag;
-            #endif // FEDERATED_DECENTRALIZED
-            count++;
-            // Add output port CodeTest.motor_arbiter.rp to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 2 + 15 + count] = &codetest_motor_arbiter_self[0]->_lf_rp.is_present;
-            #ifdef FEDERATED_DECENTRALIZED
-            // Add output port CodeTest.motor_arbiter.rp to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 2 + 15 + count] = &codetest_motor_arbiter_self[0]->_lf_rp.intended_tag;
+            environments[codetest_main]._lf_intended_tag_fields[(0) * 5 + 7 + count] = &codetest_controller_self[0]->_lf_state_display.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
         }
@@ -4067,17 +4102,17 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             // Add output port CodeTest.encoder.right to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 2 + 17 + count] = &codetest_encoder_self[0]->_lf_right.is_present;
+            environments[codetest_main].is_present_fields[(0) * 2 + 12 + count] = &codetest_encoder_self[0]->_lf_right.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add output port CodeTest.encoder.right to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 2 + 17 + count] = &codetest_encoder_self[0]->_lf_right.intended_tag;
+            environments[codetest_main]._lf_intended_tag_fields[(0) * 2 + 12 + count] = &codetest_encoder_self[0]->_lf_right.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
             // Add output port CodeTest.encoder.left to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 2 + 17 + count] = &codetest_encoder_self[0]->_lf_left.is_present;
+            environments[codetest_main].is_present_fields[(0) * 2 + 12 + count] = &codetest_encoder_self[0]->_lf_left.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add output port CodeTest.encoder.left to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 2 + 17 + count] = &codetest_encoder_self[0]->_lf_left.intended_tag;
+            environments[codetest_main]._lf_intended_tag_fields[(0) * 2 + 12 + count] = &codetest_encoder_self[0]->_lf_left.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
         }
@@ -4086,10 +4121,10 @@ void _lf_initialize_trigger_objects() {
         int count = 0; SUPPRESS_UNUSED_WARNING(count);
         {
             // Add output port CodeTest.line.reflect to array of is_present fields.
-            environments[codetest_main].is_present_fields[(0) * 1 + 19 + count] = &codetest_line_self[0]->_lf_reflect.is_present;
+            environments[codetest_main].is_present_fields[(0) * 1 + 14 + count] = &codetest_line_self[0]->_lf_reflect.is_present;
             #ifdef FEDERATED_DECENTRALIZED
             // Add output port CodeTest.line.reflect to array of intended_tag fields.
-            environments[codetest_main]._lf_intended_tag_fields[(0) * 1 + 19 + count] = &codetest_line_self[0]->_lf_reflect.intended_tag;
+            environments[codetest_main]._lf_intended_tag_fields[(0) * 1 + 14 + count] = &codetest_line_self[0]->_lf_reflect.intended_tag;
             #endif // FEDERATED_DECENTRALIZED
             count++;
         }
@@ -4136,31 +4171,21 @@ void _lf_initialize_trigger_objects() {
             // index is the OR of level 9 and 
             // deadline 9223372036854775807 shifted left 16 bits.
             codetest_controller_self[0]->_lf__reaction_8.index = lf_combine_deadline_and_level(9223372036854775807, 9);
-        }
-    
-    
-        // Set reaction priorities for ReactorInstance CodeTest.line_follower
-        {
-            // index is the OR of level 9 and 
-            // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_line_follower_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 9);
             // index is the OR of level 10 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_line_follower_self[0]->_lf__reaction_1.index = lf_combine_deadline_and_level(9223372036854775807, 10);
-        }
-    
-    
-        // Set reaction priorities for ReactorInstance CodeTest.motor_arbiter
-        {
-            // index is the OR of level 9 and 
-            // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_motor_arbiter_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 9);
-            // index is the OR of level 10 and 
-            // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_motor_arbiter_self[0]->_lf__reaction_1.index = lf_combine_deadline_and_level(9223372036854775807, 10);
+            codetest_controller_self[0]->_lf__reaction_9.index = lf_combine_deadline_and_level(9223372036854775807, 10);
             // index is the OR of level 11 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_motor_arbiter_self[0]->_lf__reaction_2.index = lf_combine_deadline_and_level(9223372036854775807, 11);
+            codetest_controller_self[0]->_lf__reaction_10.index = lf_combine_deadline_and_level(9223372036854775807, 11);
+            // index is the OR of level 12 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            codetest_controller_self[0]->_lf__reaction_11.index = lf_combine_deadline_and_level(9223372036854775807, 12);
+            // index is the OR of level 13 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            codetest_controller_self[0]->_lf__reaction_12.index = lf_combine_deadline_and_level(9223372036854775807, 13);
+            // index is the OR of level 14 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            codetest_controller_self[0]->_lf__reaction_13.index = lf_combine_deadline_and_level(9223372036854775807, 14);
         }
     
     
@@ -4169,51 +4194,51 @@ void _lf_initialize_trigger_objects() {
             // index is the OR of level 0 and 
             // deadline 9223372036854775807 shifted left 16 bits.
             codetest_disp_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 0);
-            // index is the OR of level 10 and 
+            // index is the OR of level 15 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_disp_self[0]->_lf__reaction_1.index = lf_combine_deadline_and_level(9223372036854775807, 10);
+            codetest_disp_self[0]->_lf__reaction_1.index = lf_combine_deadline_and_level(9223372036854775807, 15);
         }
     
     
         // Set reaction priorities for ReactorInstance CodeTest.motors
         {
-            // index is the OR of level 12 and 
-            // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_motors_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 12);
-            // index is the OR of level 13 and 
-            // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_motors_self[0]->_lf__reaction_1.index = lf_combine_deadline_and_level(9223372036854775807, 13);
             // index is the OR of level 14 and 
             // deadline 9223372036854775807 shifted left 16 bits.
-            codetest_motors_self[0]->_lf__reaction_2.index = lf_combine_deadline_and_level(9223372036854775807, 14);
+            codetest_motors_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 14);
+            // index is the OR of level 15 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            codetest_motors_self[0]->_lf__reaction_1.index = lf_combine_deadline_and_level(9223372036854775807, 15);
+            // index is the OR of level 16 and 
+            // deadline 9223372036854775807 shifted left 16 bits.
+            codetest_motors_self[0]->_lf__reaction_2.index = lf_combine_deadline_and_level(9223372036854775807, 16);
         
             // Set reaction priorities for ReactorInstance CodeTest.motors.motors
             {
                 // index is the OR of level 0 and 
                 // deadline 9223372036854775807 shifted left 16 bits.
                 codetest_motors_motors_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 0);
-                // index is the OR of level 16 and 
+                // index is the OR of level 18 and 
                 // deadline 9223372036854775807 shifted left 16 bits.
-                codetest_motors_motors_self[0]->_lf__reaction_1.index = lf_combine_deadline_and_level(9223372036854775807, 16);
-                // index is the OR of level 17 and 
+                codetest_motors_motors_self[0]->_lf__reaction_1.index = lf_combine_deadline_and_level(9223372036854775807, 18);
+                // index is the OR of level 19 and 
                 // deadline 9223372036854775807 shifted left 16 bits.
-                codetest_motors_motors_self[0]->_lf__reaction_2.index = lf_combine_deadline_and_level(9223372036854775807, 17);
+                codetest_motors_motors_self[0]->_lf__reaction_2.index = lf_combine_deadline_and_level(9223372036854775807, 19);
             }
         
         
             // Set reaction priorities for ReactorInstance CodeTest.motors.control_left
             {
-                // index is the OR of level 15 and 
+                // index is the OR of level 17 and 
                 // deadline 9223372036854775807 shifted left 16 bits.
-                codetest_motors_control_left_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 15);
+                codetest_motors_control_left_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 17);
             }
         
         
             // Set reaction priorities for ReactorInstance CodeTest.motors.control_right
             {
-                // index is the OR of level 15 and 
+                // index is the OR of level 17 and 
                 // deadline 9223372036854775807 shifted left 16 bits.
-                codetest_motors_control_right_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 15);
+                codetest_motors_control_right_self[0]->_lf__reaction_0.index = lf_combine_deadline_and_level(9223372036854775807, 17);
             }
         
         }

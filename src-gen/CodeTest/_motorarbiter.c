@@ -10,7 +10,7 @@ void _motorarbiterreaction_function_0(void* instance_args) {
     _motorarbiter_self_t* self = (_motorarbiter_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
     _motorarbiter_use_line_follower_t* use_line_follower = self->_lf_use_line_follower;
     int use_line_follower_width = self->_lf_use_line_follower_width; SUPPRESS_UNUSED_WARNING(use_line_follower_width);
-    #line 363 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 384 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     self->use_follower = use_line_follower->value;
 #line 16 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_motorarbiter.c"
 }
@@ -24,7 +24,7 @@ void _motorarbiterreaction_function_1(void* instance_args) {
     int controller_rp_width = self->_lf_controller_rp_width; SUPPRESS_UNUSED_WARNING(controller_rp_width);
     _motorarbiter_lp_t* lp = &self->_lf_lp;
     _motorarbiter_rp_t* rp = &self->_lf_rp;
-    #line 367 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 388 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     if (!self->use_follower) {
       if (controller_lp->is_present) lf_set(lp, controller_lp->value);
       if (controller_rp->is_present) lf_set(rp, controller_rp->value);
@@ -41,7 +41,7 @@ void _motorarbiterreaction_function_2(void* instance_args) {
     int line_follower_rp_width = self->_lf_line_follower_rp_width; SUPPRESS_UNUSED_WARNING(line_follower_rp_width);
     _motorarbiter_lp_t* lp = &self->_lf_lp;
     _motorarbiter_rp_t* rp = &self->_lf_rp;
-    #line 374 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 395 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     if (self->use_follower) {
       if (line_follower_lp->is_present) lf_set(lp, line_follower_lp->value);
       if (line_follower_rp->is_present) lf_set(rp, line_follower_rp->value);

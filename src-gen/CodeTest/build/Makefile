@@ -450,54 +450,6 @@ _line.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/CodeTest.dir/build.make CMakeFiles/CodeTest.dir/_line.c.s
 .PHONY : _line.c.s
 
-_linefollower.o: _linefollower.c.o
-.PHONY : _linefollower.o
-
-# target to build an object file
-_linefollower.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CodeTest.dir/build.make CMakeFiles/CodeTest.dir/_linefollower.c.o
-.PHONY : _linefollower.c.o
-
-_linefollower.i: _linefollower.c.i
-.PHONY : _linefollower.i
-
-# target to preprocess a source file
-_linefollower.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CodeTest.dir/build.make CMakeFiles/CodeTest.dir/_linefollower.c.i
-.PHONY : _linefollower.c.i
-
-_linefollower.s: _linefollower.c.s
-.PHONY : _linefollower.s
-
-# target to generate assembly for a file
-_linefollower.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CodeTest.dir/build.make CMakeFiles/CodeTest.dir/_linefollower.c.s
-.PHONY : _linefollower.c.s
-
-_motorarbiter.o: _motorarbiter.c.o
-.PHONY : _motorarbiter.o
-
-# target to build an object file
-_motorarbiter.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CodeTest.dir/build.make CMakeFiles/CodeTest.dir/_motorarbiter.c.o
-.PHONY : _motorarbiter.c.o
-
-_motorarbiter.i: _motorarbiter.c.i
-.PHONY : _motorarbiter.i
-
-# target to preprocess a source file
-_motorarbiter.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CodeTest.dir/build.make CMakeFiles/CodeTest.dir/_motorarbiter.c.i
-.PHONY : _motorarbiter.c.i
-
-_motorarbiter.s: _motorarbiter.c.s
-.PHONY : _motorarbiter.s
-
-# target to generate assembly for a file
-_motorarbiter.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/CodeTest.dir/build.make CMakeFiles/CodeTest.dir/_motorarbiter.c.s
-.PHONY : _motorarbiter.c.s
-
 _motors.o: _motors.c.o
 .PHONY : _motors.o
 
@@ -2570,12 +2522,6 @@ help:
 	@echo "... _line.o"
 	@echo "... _line.i"
 	@echo "... _line.s"
-	@echo "... _linefollower.o"
-	@echo "... _linefollower.i"
-	@echo "... _linefollower.s"
-	@echo "... _motorarbiter.o"
-	@echo "... _motorarbiter.i"
-	@echo "... _motorarbiter.s"
 	@echo "... _motors.o"
 	@echo "... _motors.i"
 	@echo "... _motors.s"

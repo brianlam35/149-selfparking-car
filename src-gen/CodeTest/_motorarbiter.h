@@ -108,7 +108,7 @@ typedef struct {
 typedef struct {
     struct self_base_t base;
 #line 111 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_motorarbiter.h"
-    #line 360 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 381 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     bool use_follower;
 #line 114 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_motorarbiter.h"
     _motorarbiter_controller_lp_t* _lf_controller_lp;

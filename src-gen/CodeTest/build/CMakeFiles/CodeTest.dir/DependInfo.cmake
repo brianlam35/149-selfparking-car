@@ -199,8 +199,6 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_display.c" "CMakeFiles/CodeTest.dir/_display.c.o" "gcc" "CMakeFiles/CodeTest.dir/_display.c.o.d"
   "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_encoders.c" "CMakeFiles/CodeTest.dir/_encoders.c.o" "gcc" "CMakeFiles/CodeTest.dir/_encoders.c.o.d"
   "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_line.c" "CMakeFiles/CodeTest.dir/_line.c.o" "gcc" "CMakeFiles/CodeTest.dir/_line.c.o.d"
-  "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_linefollower.c" "CMakeFiles/CodeTest.dir/_linefollower.c.o" "gcc" "CMakeFiles/CodeTest.dir/_linefollower.c.o.d"
-  "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_motorarbiter.c" "CMakeFiles/CodeTest.dir/_motorarbiter.c.o" "gcc" "CMakeFiles/CodeTest.dir/_motorarbiter.c.o.d"
   "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_motors.c" "CMakeFiles/CodeTest.dir/_motors.c.o" "gcc" "CMakeFiles/CodeTest.dir/_motors.c.o.d"
   "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_motorswithfeedback.c" "CMakeFiles/CodeTest.dir/_motorswithfeedback.c.o" "gcc" "CMakeFiles/CodeTest.dir/_motorswithfeedback.c.o.d"
   "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_parkingcontroller.c" "CMakeFiles/CodeTest.dir/_parkingcontroller.c.o" "gcc" "CMakeFiles/CodeTest.dir/_parkingcontroller.c.o.d"
