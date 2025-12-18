@@ -674,8 +674,7 @@ reactor ParkingController {
   }
 
   // ============================================================
-  // MODE: PARKED - Done, wait for exit command
-  // Send target_spot = 0 to exit
+  // MODE: PARKED - Done
   // ============================================================
   mode PARKED {
     reaction(target_spot) -> notify {=
@@ -689,17 +688,34 @@ reactor ParkingController {
 // MAIN REACTOR
 // ============================================================
 main reactor {
+  preamble {=
+    #include "pico/time.h"
+  =}
+  
   timer t(0, 10 ms)
   timer send_target(6 s)
+  
   controller = new ParkingController()
   disp       = new Display()
   motors     = new MotorsWithFeedback()
   encoder    = new Encoders()
   line       = new Line()
 
-  // TEST: Send target spot after calibration
+  // Select spot from fixed list using time-based index
   reaction(send_target) -> controller.target_spot {=
-    lf_set(controller.target_spot, 7);  // Change to 1-9 to test different spots
+    // Fixed list of spots
+    static const int spot_list[] = {9, 4, 6, 3, 2, 1, 8};
+    static const int list_size = 7;
+    
+    // Use microsecond timer to pick index - different each reset
+    uint32_t time_val = time_us_32();
+    int spot_index = (time_val / 1000) % list_size;  // Divide by 1000 to get more variation
+    
+    int target = spot_list[spot_index];
+    
+    printf("Time: %u, Index: %d, Selected spot: %d\n", time_val, spot_index, target);
+    
+    lf_set(controller.target_spot, target);
   =}
 
   // Display

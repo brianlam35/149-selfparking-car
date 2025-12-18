@@ -3,6 +3,12 @@
 #include "low_level_platform/api/low_level_platform.h"
 #include "include/CodeTest/CodeTest.h"
 #include "_codetest_main.h"
+// *********** From the preamble, verbatim:
+#line 692 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+#include "pico/time.h"
+#line 10 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
+
+// *********** End of preamble.
 // ***** Start of method declarations.
 // ***** End of method declarations.
 #include "include/api/reaction_macros.h"
@@ -13,9 +19,21 @@ void _codetest_mainreaction_function_0(void* instance_args) {
     
     } controller;
     controller.target_spot = &(self->_lf_controller.target_spot);
-    #line 702 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    lf_set(controller.target_spot, 7);  // Change to 1-9 to test different spots
-#line 19 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
+    #line 706 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    // Fixed list of spots
+    static const int spot_list[] = {9, 4, 6, 3, 2, 1, 8};
+    static const int list_size = 7;
+    
+    // Use microsecond timer to pick index - different each reset
+    uint32_t time_val = time_us_32();
+    int spot_index = (time_val / 1000) % list_size;  // Divide by 1000 to get more variation
+    
+    int target = spot_list[spot_index];
+    
+    printf("Time: %u, Index: %d, Selected spot: %d\n", time_val, spot_index, target);
+    
+    lf_set(controller.target_spot, target);
+#line 37 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
 }
 #include "include/api/reaction_macros_undef.h"
 #include "include/api/reaction_macros.h"
@@ -26,9 +44,9 @@ void _codetest_mainreaction_function_1(void* instance_args) {
     
     } encoder;
     encoder.trigger = &(self->_lf_encoder.trigger);
-    #line 724 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 740 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     lf_set(encoder.trigger, true);
-#line 32 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
+#line 50 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
 }
 #include "include/api/reaction_macros_undef.h"
 #include "include/api/reaction_macros.h"
@@ -39,9 +57,9 @@ void _codetest_mainreaction_function_2(void* instance_args) {
     
     } line;
     line.trigger = &(self->_lf_line.trigger);
-    #line 728 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 744 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     lf_set(line.trigger, true);
-#line 45 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
+#line 63 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
 }
 #include "include/api/reaction_macros_undef.h"
 _codetest_main_main_self_t* new__codetest_main() {

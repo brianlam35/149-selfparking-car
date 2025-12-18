@@ -15,10 +15,17 @@ target C {
 import Bump from "lib/Bump.lf"
 import Display from "lib/Display.lf"
 
+preamble {=
+  #include "pico/stdlib.h"
+  #include "i2c.h"  
+  
+=}
+
+
 main reactor {
-  bump = new Bump()
   disp = new Display()
   logical action clear
+  
 
   reaction(bump.left) -> disp.line0, clear {=
     lf_set(disp.line0, "Left Bumped!");

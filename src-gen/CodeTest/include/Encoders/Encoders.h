@@ -1,8 +1,8 @@
 #ifndef _encoders_H
 #define _encoders_H
 #ifndef _ENCODERS_H // necessary for arduino-cli, which automatically includes headers that are not used
-#ifndef TOP_LEVEL_PREAMBLE_1778028150_H
-#define TOP_LEVEL_PREAMBLE_1778028150_H
+#ifndef TOP_LEVEL_PREAMBLE_837946527_H
+#define TOP_LEVEL_PREAMBLE_837946527_H
 /*Correspondence: Range: [(18, 2), (26, 17)) -> Range: [(0, 0), (8, 17)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/lib/Encoders.lf)*/#include <math.h>
 #include <hardware/pio.h>
 #include <quadrature_encoder.pio.h>
@@ -12,7 +12,7 @@
 #define LEFT_ENCODER_AB 12
 #define RIGHT_SM 0
 #define LEFT_SM 1
-#endif // TOP_LEVEL_PREAMBLE_1778028150_H
+#endif // TOP_LEVEL_PREAMBLE_837946527_H
 #ifdef __cplusplus
 extern "C" {
 #endif

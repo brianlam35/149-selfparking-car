@@ -1,0 +1,7 @@
+/home/lambrian/149-selfparking-car/src-gen/I2C_test/build/pioasm/CMakeFiles/pioasm.dir
+/home/lambrian/149-selfparking-car/src-gen/I2C_test/build/pioasm/CMakeFiles/edit_cache.dir
+/home/lambrian/149-selfparking-car/src-gen/I2C_test/build/pioasm/CMakeFiles/rebuild_cache.dir
+/home/lambrian/149-selfparking-car/src-gen/I2C_test/build/pioasm/CMakeFiles/list_install_components.dir
+/home/lambrian/149-selfparking-car/src-gen/I2C_test/build/pioasm/CMakeFiles/install.dir
+/home/lambrian/149-selfparking-car/src-gen/I2C_test/build/pioasm/CMakeFiles/install/local.dir
+/home/lambrian/149-selfparking-car/src-gen/I2C_test/build/pioasm/CMakeFiles/install/strip.dir

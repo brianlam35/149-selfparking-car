@@ -74,6 +74,7 @@ reactor ParkingController {
     lf_set(notify, "CALIBRATING");
     lf_set(state_display, "CALIB");
     printf("=== PARKING GARAGE ===\n");
+    
   =}
 
   reaction(end_calibration) -> calibrate, notify, state_display {=

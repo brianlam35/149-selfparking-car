@@ -697,7 +697,7 @@ void _parkingcontrollerreaction_function_13(void* instance_args) {
     _parkingcontroller_target_spot_t* target_spot = self->_lf_target_spot;
     int target_spot_width = self->_lf_target_spot_width; SUPPRESS_UNUSED_WARNING(target_spot_width);
     _parkingcontroller_notify_t* notify = &self->_lf_notify;
-    #line 682 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 681 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     // Could handle exit here later
     printf("Already parked. Exit not implemented.\n");
 #line 704 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_parkingcontroller.c"
