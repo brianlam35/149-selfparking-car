@@ -4,6 +4,8 @@
 #ifndef TOP_LEVEL_PREAMBLE_1206678562_H
 #define TOP_LEVEL_PREAMBLE_1206678562_H
 #include <pico/stdlib.h>
+#include <hardware/uart.h>
+#include <hardware/gpio.h>
 #endif // TOP_LEVEL_PREAMBLE_1206678562_H
 typedef struct {
     token_type_t type;
@@ -105,28 +107,28 @@ typedef struct {
 } _parkingcontroller_state_display_t;
 typedef struct {
     struct self_base_t base;
-#line 109 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_parkingcontroller.h"
-    #line 55 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    int threshold;
-    #line 56 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    float forward_speed;
+#line 111 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_parkingcontroller.h"
     #line 57 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    float turn_speed;
+    int threshold;
     #line 58 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    float forward_speed;
+    #line 59 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    float turn_speed;
+    #line 60 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     float backup_speed;
-    #line 61 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    int parking_spot;
-    #line 62 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    int spot_count;
     #line 63 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    int turn_count;
+    int parking_spot;
     #line 64 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    int exit_count;
+    int spot_count;
     #line 65 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
-    bool last_left_high;
+    int turn_count;
     #line 66 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    int exit_count;
+    #line 67 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    bool last_left_high;
+    #line 68 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     bool last_right_high;
-#line 130 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_parkingcontroller.h"
+#line 132 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_parkingcontroller.h"
     _parkingcontroller_reflect_t* _lf_reflect;
     // width of -2 indicates that it is not a multiport.
     int _lf_reflect_width;

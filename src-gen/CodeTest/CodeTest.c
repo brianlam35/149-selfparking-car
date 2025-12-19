@@ -137,12 +137,12 @@ void _lf_initialize_trigger_objects() {
     // Associate timer with the environment of its parent
     environments[codetest_main].timer_triggers[timer_triggers_count[codetest_main]++] = &codetest_main_self[0]->_lf__t;
     codetest_main_self[0]->_lf__t.mode = NULL;
-    // Initiaizing timer CodeTest.send_target.
-    codetest_main_self[0]->_lf__send_target.offset = SEC(6);
-    codetest_main_self[0]->_lf__send_target.period = 0;
+    // Initiaizing timer CodeTest.receive_target.
+    codetest_main_self[0]->_lf__receive_target.offset = SEC(7);
+    codetest_main_self[0]->_lf__receive_target.period = SEC(2);
     // Associate timer with the environment of its parent
-    environments[codetest_main].timer_triggers[timer_triggers_count[codetest_main]++] = &codetest_main_self[0]->_lf__send_target;
-    codetest_main_self[0]->_lf__send_target.mode = NULL;
+    environments[codetest_main].timer_triggers[timer_triggers_count[codetest_main]++] = &codetest_main_self[0]->_lf__receive_target;
+    codetest_main_self[0]->_lf__receive_target.mode = NULL;
     
     codetest_main_self[0]->_lf__reaction_0.deadline = NEVER;
     codetest_main_self[0]->_lf__reaction_1.deadline = NEVER;

@@ -13,7 +13,7 @@ void _parkingcontrollerreaction_function_0(void* instance_args) {
     _parkingcontroller_rp_t* rp = &self->_lf_rp;
     _parkingcontroller_notify_t* notify = &self->_lf_notify;
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
-    #line 71 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 73 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     lf_set(calibrate, true);
     lf_set(lp, 0.0f);
     lf_set(rp, 0.0f);
@@ -29,7 +29,7 @@ void _parkingcontrollerreaction_function_1(void* instance_args) {
     _parkingcontroller_calibrate_t* calibrate = &self->_lf_calibrate;
     _parkingcontroller_notify_t* notify = &self->_lf_notify;
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
-    #line 80 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 82 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     lf_set(calibrate, false);
     lf_set(notify, "READY");
     lf_set(state_display, "WAIT");
@@ -52,7 +52,7 @@ void _parkingcontrollerreaction_function_2(void* instance_args) {
     _parkingcontroller_rp_t* rp = &self->_lf_rp;
     _parkingcontroller_notify_t* notify = &self->_lf_notify;
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
-    #line 91 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 93 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     self->parking_spot = target_spot->value;
     self->spot_count = 0;
     self->turn_count = 0;
@@ -92,7 +92,7 @@ void _parkingcontrollerreaction_function_3(void* instance_args) {
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
     reactor_mode_t* PARKED = &self->_lf__modes[11];
     lf_mode_change_type_t _lf_PARKED_change_type = reset_transition;
-    #line 125 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 127 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -158,7 +158,7 @@ void _parkingcontrollerreaction_function_4(void* instance_args) {
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
     reactor_mode_t* TURN_LEFT = &self->_lf__modes[5];
     lf_mode_change_type_t _lf_TURN_LEFT_change_type = reset_transition;
-    #line 186 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 188 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -222,7 +222,7 @@ void _parkingcontrollerreaction_function_5(void* instance_args) {
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
     reactor_mode_t* TURN_LEFT_6_9 = &self->_lf__modes[4];
     lf_mode_change_type_t _lf_TURN_LEFT_6_9_change_type = reset_transition;
-    #line 249 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 251 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -288,7 +288,7 @@ void _parkingcontrollerreaction_function_6(void* instance_args) {
     lf_mode_change_type_t _lf_FOLLOW_TO_CORRIDOR_6_9_change_type = reset_transition;
     reactor_mode_t* FOLLOW_IN_CORRIDOR_6_9 = &self->_lf__modes[7];
     lf_mode_change_type_t _lf_FOLLOW_IN_CORRIDOR_6_9_change_type = reset_transition;
-    #line 307 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 309 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -340,7 +340,7 @@ void _parkingcontrollerreaction_function_7(void* instance_args) {
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
     reactor_mode_t* FOLLOW_IN_CORRIDOR_2_5 = &self->_lf__modes[6];
     lf_mode_change_type_t _lf_FOLLOW_IN_CORRIDOR_2_5_change_type = reset_transition;
-    #line 352 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 354 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -384,7 +384,7 @@ void _parkingcontrollerreaction_function_8(void* instance_args) {
     lf_mode_change_type_t _lf_TURN_LEFT_INTO_SPOT_change_type = reset_transition;
     reactor_mode_t* TURN_RIGHT_INTO_SPOT = &self->_lf__modes[9];
     lf_mode_change_type_t _lf_TURN_RIGHT_INTO_SPOT_change_type = reset_transition;
-    #line 393 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 395 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -472,7 +472,7 @@ void _parkingcontrollerreaction_function_9(void* instance_args) {
     lf_mode_change_type_t _lf_TURN_LEFT_INTO_SPOT_change_type = reset_transition;
     reactor_mode_t* TURN_RIGHT_INTO_SPOT = &self->_lf__modes[9];
     lf_mode_change_type_t _lf_TURN_RIGHT_INTO_SPOT_change_type = reset_transition;
-    #line 478 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 480 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -560,7 +560,7 @@ void _parkingcontrollerreaction_function_10(void* instance_args) {
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
     reactor_mode_t* PARK_FORWARD = &self->_lf__modes[10];
     lf_mode_change_type_t _lf_PARK_FORWARD_change_type = reset_transition;
-    #line 559 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 561 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -601,7 +601,7 @@ void _parkingcontrollerreaction_function_11(void* instance_args) {
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
     reactor_mode_t* PARK_FORWARD = &self->_lf__modes[10];
     lf_mode_change_type_t _lf_PARK_FORWARD_change_type = reset_transition;
-    #line 593 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 595 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int R4 = reflect->value[4];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -642,7 +642,7 @@ void _parkingcontrollerreaction_function_12(void* instance_args) {
     _parkingcontroller_state_display_t* state_display = &self->_lf_state_display;
     reactor_mode_t* PARKED = &self->_lf__modes[11];
     lf_mode_change_type_t _lf_PARKED_change_type = reset_transition;
-    #line 628 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 630 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     int L0 = reflect->value[0];
     int CL = reflect->value[1];
     int C  = reflect->value[2];
@@ -697,7 +697,7 @@ void _parkingcontrollerreaction_function_13(void* instance_args) {
     _parkingcontroller_target_spot_t* target_spot = self->_lf_target_spot;
     int target_spot_width = self->_lf_target_spot_width; SUPPRESS_UNUSED_WARNING(target_spot_width);
     _parkingcontroller_notify_t* notify = &self->_lf_notify;
-    #line 681 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 683 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     // Could handle exit here later
     printf("Already parked. Exit not implemented.\n");
 #line 704 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_parkingcontroller.c"

@@ -39,6 +39,8 @@ import Line from "lib/Line.lf"
 
 preamble {=
   #include <pico/stdlib.h>
+  #include <hardware/uart.h>
+  #include <hardware/gpio.h>
 =}
 
 reactor ParkingController {
@@ -693,29 +695,37 @@ main reactor {
   =}
   
   timer t(0, 10 ms)
-  timer send_target(6 s)
+  timer receive_target(7sec, 2sec)
   
   controller = new ParkingController()
   disp       = new Display()
   motors     = new MotorsWithFeedback()
   encoder    = new Encoders()
   line       = new Line()
+  
 
   // Select spot from fixed list using time-based index
-  reaction(send_target) -> controller.target_spot {=
+  reaction(receive_target) -> controller.target_spot {=
     // Fixed list of spots
     static const int spot_list[] = {9, 4, 6, 3, 2, 1, 8};
     static const int list_size = 7;
+    gpio_set_function(29, GPIO_FUNC_UART);
+    uart_init(uart0, 115200);
+    uart_set_format(uart0, 8, 1, UART_PARITY_NONE);
+    uart_set_fifo_enabled(uart0, true);
+    uint8_t last;
+    bool got = false;
+    while (uart_is_readable(uart0)){
+      last = (uint8_t) uart_getc(uart0);
+      got = true;
+    }
     
     // Use microsecond timer to pick index - different each reset
-    uint32_t time_val = time_us_32();
-    int spot_index = (time_val / 1000) % list_size;  // Divide by 1000 to get more variation
     
-    int target = spot_list[spot_index];
     
-    printf("Time: %u, Index: %d, Selected spot: %d\n", time_val, spot_index, target);
-    
-    lf_set(controller.target_spot, target);
+    if (got){
+      lf_set(controller.target_spot, last);
+    }
   =}
 
   // Display

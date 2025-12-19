@@ -1,0 +1,47 @@
+target C {
+  platform: {
+    name: "rp2040",
+    board: "pololu_3pi_2040_robot"
+  },
+  single-threaded: true
+}
+
+import Display from "lib/Display.lf"
+
+
+preamble {=
+  #include <pico/stdlib.h>
+  #include <hardware/uart.h>
+  #include <hardware/gpio.h>
+=}
+
+main reactor {
+    timer t_on(0, 10 ms);
+    disp = new Display()
+    
+    reaction(startup) {=
+        gpio_set_function(28, GPIO_FUNC_UART);
+        gpio_set_function(29, GPIO_FUNC_UART); 
+        uart_init(uart0, 115200);
+        uart_set_format(uart0, 8, 1, UART_PARITY_NONE);
+        uart_set_fifo_enabled(uart0, true);
+    =}
+
+    reaction(t_on) -> disp.line0 {=
+        static char buf[8];
+        static uint8_t idx = 0;
+
+        bool line_done = false;
+
+        while (uart_is_readable(uart0)) {
+            buf[32] = (int)uart_getc(uart0);
+            printf("%c", buf);
+            // Optional: ignore CR if your sender uses \r\n
+        }
+
+    
+        
+  =}
+
+
+}

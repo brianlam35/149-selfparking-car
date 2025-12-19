@@ -1,0 +1,117 @@
+#include "include/api/schedule.h"
+#include <string.h>
+#include "low_level_platform/api/low_level_platform.h"
+#include "include/random/random.h"
+#include "_random_main.h"
+// ***** Start of method declarations.
+// ***** End of method declarations.
+#include "include/api/reaction_macros.h"
+void _random_mainreaction_function_0(void* instance_args) {
+    _random_main_main_self_t* self = (_random_main_main_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
+    struct controller {
+        _parkingcontroller_target_spot_t* target_spot;
+    
+    } controller;
+    controller.target_spot = &(self->_lf_controller.target_spot);
+    #line 704 "/home/lambrian/149-selfparking-car/src/random.lf"
+    // Use microsecond timer as seed - different each power cycle
+    uint32_t seed = time_us_32();
+    srand(seed);
+    
+    // Generate random spot 1-9
+    int target = (rand() % 9) + 1;
+    
+    printf("Random seed: %u, Selected spot: %d\n", seed, target);
+    lf_set(controller.target_spot, target);
+#line 27 "/home/lambrian/149-selfparking-car/src-gen/random/_random_main.c"
+}
+#include "include/api/reaction_macros_undef.h"
+#include "include/api/reaction_macros.h"
+void _random_mainreaction_function_1(void* instance_args) {
+    _random_main_main_self_t* self = (_random_main_main_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
+    struct encoder {
+        _encoders_trigger_t* trigger;
+    
+    } encoder;
+    encoder.trigger = &(self->_lf_encoder.trigger);
+    #line 734 "/home/lambrian/149-selfparking-car/src/random.lf"
+    lf_set(encoder.trigger, true);
+#line 40 "/home/lambrian/149-selfparking-car/src-gen/random/_random_main.c"
+}
+#include "include/api/reaction_macros_undef.h"
+#include "include/api/reaction_macros.h"
+void _random_mainreaction_function_2(void* instance_args) {
+    _random_main_main_self_t* self = (_random_main_main_self_t*)instance_args; SUPPRESS_UNUSED_WARNING(self);
+    struct line {
+        _line_trigger_t* trigger;
+    
+    } line;
+    line.trigger = &(self->_lf_line.trigger);
+    #line 738 "/home/lambrian/149-selfparking-car/src/random.lf"
+    lf_set(line.trigger, true);
+#line 53 "/home/lambrian/149-selfparking-car/src-gen/random/_random_main.c"
+}
+#include "include/api/reaction_macros_undef.h"
+_random_main_main_self_t* new__random_main() {
+    _random_main_main_self_t* self = (_random_main_main_self_t*)lf_new_reactor(sizeof(_random_main_main_self_t));
+    // Set the _width variable for all cases. This will be -2
+    // if the reactor is not a bank of reactors.
+    self->_lf_controller_width = -2;
+    // Set the _width variable for all cases. This will be -2
+    // if the reactor is not a bank of reactors.
+    self->_lf_encoder_width = -2;
+    // Set the _width variable for all cases. This will be -2
+    // if the reactor is not a bank of reactors.
+    self->_lf_line_width = -2;
+    self->_lf__reaction_0.number = 0;
+    self->_lf__reaction_0.function = _random_mainreaction_function_0;
+    self->_lf__reaction_0.self = self;
+    self->_lf__reaction_0.deadline_violation_handler = NULL;
+    self->_lf__reaction_0.STP_handler = NULL;
+    self->_lf__reaction_0.name = "?";
+    self->_lf__reaction_0.mode = NULL;
+    self->_lf__reaction_1.number = 1;
+    self->_lf__reaction_1.function = _random_mainreaction_function_1;
+    self->_lf__reaction_1.self = self;
+    self->_lf__reaction_1.deadline_violation_handler = NULL;
+    self->_lf__reaction_1.STP_handler = NULL;
+    self->_lf__reaction_1.name = "?";
+    self->_lf__reaction_1.mode = NULL;
+    self->_lf__reaction_2.number = 2;
+    self->_lf__reaction_2.function = _random_mainreaction_function_2;
+    self->_lf__reaction_2.self = self;
+    self->_lf__reaction_2.deadline_violation_handler = NULL;
+    self->_lf__reaction_2.STP_handler = NULL;
+    self->_lf__reaction_2.name = "?";
+    self->_lf__reaction_2.mode = NULL;
+    self->_lf__t.last_tag = NEVER_TAG;
+    #ifdef FEDERATED_DECENTRALIZED
+    self->_lf__t.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
+    #endif // FEDERATED_DECENTRALIZED
+    self->_lf__t_reactions[0] = &self->_lf__reaction_1;
+    self->_lf__t_reactions[1] = &self->_lf__reaction_2;
+    self->_lf__t.reactions = &self->_lf__t_reactions[0];
+    self->_lf__t.number_of_reactions = 2;
+    #ifdef FEDERATED
+    self->_lf__t.physical_time_of_arrival = NEVER;
+    #endif // FEDERATED
+    self->_lf__t.is_timer = true;
+    #ifdef FEDERATED_DECENTRALIZED
+    self->_lf__t.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
+    #endif // FEDERATED_DECENTRALIZED
+    self->_lf__send_target.last_tag = NEVER_TAG;
+    #ifdef FEDERATED_DECENTRALIZED
+    self->_lf__send_target.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
+    #endif // FEDERATED_DECENTRALIZED
+    self->_lf__send_target_reactions[0] = &self->_lf__reaction_0;
+    self->_lf__send_target.reactions = &self->_lf__send_target_reactions[0];
+    self->_lf__send_target.number_of_reactions = 1;
+    #ifdef FEDERATED
+    self->_lf__send_target.physical_time_of_arrival = NEVER;
+    #endif // FEDERATED
+    self->_lf__send_target.is_timer = true;
+    #ifdef FEDERATED_DECENTRALIZED
+    self->_lf__send_target.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
+    #endif // FEDERATED_DECENTRALIZED
+    return self;
+}

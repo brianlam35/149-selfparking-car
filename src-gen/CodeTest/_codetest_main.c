@@ -4,7 +4,7 @@
 #include "include/CodeTest/CodeTest.h"
 #include "_codetest_main.h"
 // *********** From the preamble, verbatim:
-#line 692 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+#line 694 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
 #include "pico/time.h"
 #line 10 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
 
@@ -19,21 +19,28 @@ void _codetest_mainreaction_function_0(void* instance_args) {
     
     } controller;
     controller.target_spot = &(self->_lf_controller.target_spot);
-    #line 706 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 709 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     // Fixed list of spots
     static const int spot_list[] = {9, 4, 6, 3, 2, 1, 8};
     static const int list_size = 7;
+    gpio_set_function(29, GPIO_FUNC_UART);
+    uart_init(uart0, 115200);
+    uart_set_format(uart0, 8, 1, UART_PARITY_NONE);
+    uart_set_fifo_enabled(uart0, true);
+    uint8_t last;
+    bool got = false;
+    while (uart_is_readable(uart0)){
+      last = (uint8_t) uart_getc(uart0);
+      got = true;
+    }
     
     // Use microsecond timer to pick index - different each reset
-    uint32_t time_val = time_us_32();
-    int spot_index = (time_val / 1000) % list_size;  // Divide by 1000 to get more variation
     
-    int target = spot_list[spot_index];
     
-    printf("Time: %u, Index: %d, Selected spot: %d\n", time_val, spot_index, target);
-    
-    lf_set(controller.target_spot, target);
-#line 37 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
+    if (got){
+      lf_set(controller.target_spot, last);
+    }
+#line 44 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
 }
 #include "include/api/reaction_macros_undef.h"
 #include "include/api/reaction_macros.h"
@@ -44,9 +51,9 @@ void _codetest_mainreaction_function_1(void* instance_args) {
     
     } encoder;
     encoder.trigger = &(self->_lf_encoder.trigger);
-    #line 740 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 750 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     lf_set(encoder.trigger, true);
-#line 50 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
+#line 57 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
 }
 #include "include/api/reaction_macros_undef.h"
 #include "include/api/reaction_macros.h"
@@ -57,9 +64,9 @@ void _codetest_mainreaction_function_2(void* instance_args) {
     
     } line;
     line.trigger = &(self->_lf_line.trigger);
-    #line 744 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
+    #line 754 "/home/lambrian/149-selfparking-car/src/CodeTest.lf"
     lf_set(line.trigger, true);
-#line 63 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
+#line 70 "/home/lambrian/149-selfparking-car/src-gen/CodeTest/_codetest_main.c"
 }
 #include "include/api/reaction_macros_undef.h"
 _codetest_main_main_self_t* new__codetest_main() {
@@ -109,19 +116,19 @@ _codetest_main_main_self_t* new__codetest_main() {
     #ifdef FEDERATED_DECENTRALIZED
     self->_lf__t.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
     #endif // FEDERATED_DECENTRALIZED
-    self->_lf__send_target.last_tag = NEVER_TAG;
+    self->_lf__receive_target.last_tag = NEVER_TAG;
     #ifdef FEDERATED_DECENTRALIZED
-    self->_lf__send_target.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
+    self->_lf__receive_target.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
     #endif // FEDERATED_DECENTRALIZED
-    self->_lf__send_target_reactions[0] = &self->_lf__reaction_0;
-    self->_lf__send_target.reactions = &self->_lf__send_target_reactions[0];
-    self->_lf__send_target.number_of_reactions = 1;
+    self->_lf__receive_target_reactions[0] = &self->_lf__reaction_0;
+    self->_lf__receive_target.reactions = &self->_lf__receive_target_reactions[0];
+    self->_lf__receive_target.number_of_reactions = 1;
     #ifdef FEDERATED
-    self->_lf__send_target.physical_time_of_arrival = NEVER;
+    self->_lf__receive_target.physical_time_of_arrival = NEVER;
     #endif // FEDERATED
-    self->_lf__send_target.is_timer = true;
+    self->_lf__receive_target.is_timer = true;
     #ifdef FEDERATED_DECENTRALIZED
-    self->_lf__send_target.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
+    self->_lf__receive_target.intended_tag = (tag_t) { .time = NEVER, .microstep = 0u};
     #endif // FEDERATED_DECENTRALIZED
     return self;
 }

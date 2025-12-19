@@ -1,0 +1,5 @@
+/home/lambrian/149-selfparking-car/src-gen/random/build/pioasm-install/pioasm/pioasm
+/home/lambrian/149-selfparking-car/src-gen/random/build/pioasm-install/pioasm/pioasmTargets.cmake
+/home/lambrian/149-selfparking-car/src-gen/random/build/pioasm-install/pioasm/pioasmTargets-release.cmake
+/home/lambrian/149-selfparking-car/src-gen/random/build/pioasm-install/pioasm/pioasmConfig.cmake
+/home/lambrian/149-selfparking-car/src-gen/random/build/pioasm-install/pioasm/pioasmConfigVersion.cmake

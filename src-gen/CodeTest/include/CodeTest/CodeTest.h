@@ -3,30 +3,32 @@
 #ifndef _CODETEST_MAIN_H // necessary for arduino-cli, which automatically includes headers that are not used
 #ifndef TOP_LEVEL_PREAMBLE_1206678562_H
 #define TOP_LEVEL_PREAMBLE_1206678562_H
-/*Correspondence: Range: [(40, 2), (40, 26)) -> Range: [(0, 0), (0, 24)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/CodeTest.lf)*/#include <pico/stdlib.h>
+/*Correspondence: Range: [(40, 2), (42, 26)) -> Range: [(0, 0), (2, 26)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/CodeTest.lf)*/#include <pico/stdlib.h>
+#include <hardware/uart.h>
+#include <hardware/gpio.h>
 #endif // TOP_LEVEL_PREAMBLE_1206678562_H
 
-#ifndef TOP_LEVEL_PREAMBLE_560041895_H
-#define TOP_LEVEL_PREAMBLE_560041895_H
+#ifndef TOP_LEVEL_PREAMBLE_368242083_H
+#define TOP_LEVEL_PREAMBLE_368242083_H
 /*Correspondence: Range: [(18, 2), (19, 68)) -> Range: [(0, 0), (1, 68)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/lib/Display.lf)*/#include <pico/stdlib.h>
 #include <display.h>        // Do not use "display.h". Doesn't work.
-#endif // TOP_LEVEL_PREAMBLE_560041895_H
-#ifndef TOP_LEVEL_PREAMBLE_1491623023_H
-#define TOP_LEVEL_PREAMBLE_1491623023_H
+#endif // TOP_LEVEL_PREAMBLE_368242083_H
+#ifndef TOP_LEVEL_PREAMBLE_169049466_H
+#define TOP_LEVEL_PREAMBLE_169049466_H
 /*Correspondence: Range: [(21, 2), (24, 64)) -> Range: [(0, 0), (3, 64)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/lib/MotorsWithFeedback.lf)*/#include <math.h>
 #define WHEEL_DIAMETER 0.032 // meters
 #define COUNTS_PER_REV 360 //CPR
 #define TICKS_PER_METER (WHEEL_DIAMETER * M_PI) / COUNTS_PER_REV
-#endif // TOP_LEVEL_PREAMBLE_1491623023_H
-#ifndef TOP_LEVEL_PREAMBLE_1688851596_H
-#define TOP_LEVEL_PREAMBLE_1688851596_H
+#endif // TOP_LEVEL_PREAMBLE_169049466_H
+#ifndef TOP_LEVEL_PREAMBLE_911895107_H
+#define TOP_LEVEL_PREAMBLE_911895107_H
 /*Correspondence: Range: [(19, 2), (20, 17)) -> Range: [(0, 0), (1, 17)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/lib/Motors.lf)*/#include <motors.h>
 #include <math.h>
-#endif // TOP_LEVEL_PREAMBLE_1688851596_H
+#endif // TOP_LEVEL_PREAMBLE_911895107_H
 
 
-#ifndef TOP_LEVEL_PREAMBLE_837946527_H
-#define TOP_LEVEL_PREAMBLE_837946527_H
+#ifndef TOP_LEVEL_PREAMBLE_256139608_H
+#define TOP_LEVEL_PREAMBLE_256139608_H
 /*Correspondence: Range: [(18, 2), (26, 17)) -> Range: [(0, 0), (8, 17)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/lib/Encoders.lf)*/#include <math.h>
 #include <hardware/pio.h>
 #include <quadrature_encoder.pio.h>
@@ -36,11 +38,11 @@
 #define LEFT_ENCODER_AB 12
 #define RIGHT_SM 0
 #define LEFT_SM 1
-#endif // TOP_LEVEL_PREAMBLE_837946527_H
-#ifndef TOP_LEVEL_PREAMBLE_1909141817_H
-#define TOP_LEVEL_PREAMBLE_1909141817_H
+#endif // TOP_LEVEL_PREAMBLE_256139608_H
+#ifndef TOP_LEVEL_PREAMBLE_372898106_H
+#define TOP_LEVEL_PREAMBLE_372898106_H
 /*Correspondence: Range: [(33, 2), (33, 25)) -> Range: [(0, 0), (0, 23)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/lib/Line.lf)*/#include <ir_sensors.h>
-#endif // TOP_LEVEL_PREAMBLE_1909141817_H
+#endif // TOP_LEVEL_PREAMBLE_372898106_H
 #ifdef __cplusplus
 extern "C" {
 #endif

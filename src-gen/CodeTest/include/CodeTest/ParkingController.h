@@ -3,7 +3,9 @@
 #ifndef _PARKINGCONTROLLER_H // necessary for arduino-cli, which automatically includes headers that are not used
 #ifndef TOP_LEVEL_PREAMBLE_1206678562_H
 #define TOP_LEVEL_PREAMBLE_1206678562_H
-/*Correspondence: Range: [(40, 2), (40, 26)) -> Range: [(0, 0), (0, 24)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/CodeTest.lf)*/#include <pico/stdlib.h>
+/*Correspondence: Range: [(40, 2), (42, 26)) -> Range: [(0, 0), (2, 26)) (verbatim=true; src=/home/lambrian/149-selfparking-car/src/CodeTest.lf)*/#include <pico/stdlib.h>
+#include <hardware/uart.h>
+#include <hardware/gpio.h>
 #endif // TOP_LEVEL_PREAMBLE_1206678562_H
 #ifdef __cplusplus
 extern "C" {
